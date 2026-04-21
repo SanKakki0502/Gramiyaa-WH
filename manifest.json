@@ -1,0 +1,24 @@
+{
+  "name": "Gramiyaa_WH",
+  "short_name": "Gramiyaa_WH",
+  "description": "Warehouse Management Portal",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#154734",
+  "theme_color": "#154734",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/154734/c9a84c?text=GWH",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/154734/c9a84c?text=GWH",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

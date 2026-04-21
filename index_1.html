@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#154734" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Gramiyaa WH" />
+  <title>Gramiyaa_WH</title>
+  <link rel="manifest" href="manifest.json" />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700;800&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --green-dark: #154734;
+      --green-mid: #1d6347;
+      --green-light: #27865f;
+      --green-pale: #e8f5ee;
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --white: #ffffff;
+      --gray-100: #f5f5f0;
+      --gray-200: #e8e8e0;
+      --gray-400: #aaa;
+      --gray-600: #666;
+      --danger: #c0392b;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(21,71,52,0.18);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--green-dark);
+      min-height: 100vh;
+      color: var(--white);
+      overscroll-behavior: none;
+    }
+
+    /* ── APP SHELL ── */
+    #app { min-height: 100vh; display: flex; flex-direction: column; }
+
+    .app-header {
+      background: rgba(21,71,52,0.95);
+      backdrop-filter: blur(10px);
+      padding: 16px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(201,168,76,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-logo {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      color: var(--gold);
+    }
+    .app-logo span { color: var(--white); }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      object-fit: cover;
+    }
+    .user-initial {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--green-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; flex: 1; flex-direction: column; animation: fadeIn .25s ease; }
+    .screen.active { display: flex; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .screen-body {
+      flex: 1;
+      padding: 24px 20px;
+      overflow-y: auto;
+    }
+
+    /* ── LOGIN ── */
+    #screen-login {
+      background: linear-gradient(160deg, var(--green-dark) 0%, #0f3326 100%);
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .login-logo-wrap {
+      margin-bottom: 32px;
+    }
+    .login-icon {
+      width: 80px; height: 80px;
+      background: var(--gold);
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 2.5rem;
+    }
+    .login-title {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+    }
+    .login-sub {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.6);
+      margin-top: 6px;
+    }
+
+    .btn-google {
+      background: var(--white);
+      color: #333;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer;
+      margin: 32px auto 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-google:active { transform: scale(0.97); }
+    .btn-google img { width: 22px; }
+
+    /* ── LOCATION SCREEN ── */
+    .screen-title {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--gold-light);
+      margin-bottom: 6px;
+    }
+    .screen-subtitle {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 24px;
+    }
+
+    .location-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .location-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      color: var(--white);
+      font-size: 1.05rem;
+      font-family: 'Raleway', sans-serif;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background .15s, border-color .15s, transform .1s;
+    }
+    .location-btn:active { transform: scale(0.98); background: rgba(201,168,76,0.15); border-color: var(--gold); }
+    .location-btn .loc-icon { font-size: 1.4rem; }
+    .location-btn .loc-arrow { opacity: 0.4; font-size: 1.1rem; }
+
+    /* ── ACTION SCREEN ── */
+    .breadcrumb {
+      font-size: 0.8rem;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .action-grid { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+
+    .action-card {
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      cursor: pointer;
+      border: none;
+      text-align: left;
+      transition: transform .15s, box-shadow .15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .action-card:active { transform: scale(0.97); }
+
+    .action-card.inbound { background: linear-gradient(135deg, #1a6b4a, #22915f); }
+    .action-card.outbound { background: linear-gradient(135deg, #1e5a8a, #2878b5); }
+    .action-card.returns { background: linear-gradient(135deg, #7a3a10, #b85820); }
+
+    .action-card-icon { font-size: 2.2rem; margin-bottom: 10px; }
+    .action-card-title {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: var(--white);
+    }
+    .action-card-desc { font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-top: 4px; }
+
+    /* ── FORM SCREEN ── */
+    .back-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px;
+      color: var(--white);
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .form-section {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .form-section-title {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--gold-light);
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 5px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .field label .req { color: var(--gold); margin-left: 2px; }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      color: var(--white);
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      font-family: 'Source Sans 3', sans-serif;
+      outline: none;
+      transition: border-color .2s;
+      -webkit-appearance: none;
+    }
+    .field input:focus, .field select:focus { border-color: var(--gold); }
+    .field input[readonly] { opacity: 0.65; cursor: default; }
+    .field select option { background: #1a4030; color: var(--white); }
+
+    .field input[type="file"] {
+      padding: 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .file-hint { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+    /* ── PRODUCT TABS ── */
+    .tab-bar {
+      display: flex;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .tab-btn.active {
+      background: var(--gold);
+      color: var(--green-dark);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── PRODUCT ROWS ── */
+    .product-row {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .product-row-num {
+      font-size: 0.7rem;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .remove-row-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(192,57,43,0.3);
+      border: none;
+      border-radius: 6px;
+      color: #ff8a7a;
+      width: 26px; height: 26px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .add-row-btn {
+      width: 100%;
+      background: rgba(201,168,76,0.12);
+      border: 1px dashed rgba(201,168,76,0.4);
+      border-radius: 10px;
+      color: var(--gold-light);
+      padding: 11px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      margin-top: 4px;
+      font-family: 'Source Sans 3', sans-serif;
+    }
+    .add-row-btn:active { background: rgba(201,168,76,0.22); }
+
+    /* ── SUBMIT ── */
+    .submit-btn {
+      width: 100%;
+      background: var(--gold);
+      color: var(--green-dark);
+      border: none;
+      border-radius: 50px;
+      padding: 16px;
+      font-size: 1.05rem;
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 20px rgba(201,168,76,0.35);
+    }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e3a2e;
+      border: 1px solid var(--gold);
+      color: var(--white);
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      z-index: 9999;
+      transition: transform .3s ease;
+      max-width: 90vw;
+      text-align: center;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.error { border-color: var(--danger); background: #3a1e1e; }
+
+    /* ── LOADER ── */
+    #loader {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(21,71,52,0.85);
+      z-index: 9998;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    #loader.show { display: flex; }
+    .loader-spinner {
+      width: 44px; height: 44px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+
+    /* ── SUCCESS ── */
+    #screen-success .screen-body {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .success-icon { font-size: 5rem; }
+    .success-title {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--gold-light);
+    }
+    .success-sub { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader"><div class="loader-spinner"></div><div class="loader-text" id="loader-text">Processing…</div></div>
+<!-- TOAST -->
+<div id="toast"></div>
+
+<div id="app">
+  <!-- HEADER (hidden on login) -->
+  <header class="app-header" id="app-header" style="display:none">
+    <div class="app-logo">Gramiyaa<span>_WH</span></div>
+    <div class="user-badge" id="user-badge" onclick="handleLogout()"></div>
+  </header>
+
+  <!-- SCREEN: LOGIN -->
+  <div id="screen-login" class="screen active" style="display:flex">
+    <div class="login-logo-wrap">
+      <div class="login-icon">🌾</div>
+      <div class="login-title">GRAMIYAA_WH</div>
+      <div class="login-sub">Warehouse Management Portal</div>
+    </div>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Sign in with Google
+    </button>
+  </div>
+
+  <!-- SCREEN: LOCATIONS -->
+  <div id="screen-locations" class="screen">
+    <div class="screen-body">
+      <div class="screen-title">Select Location</div>
+      <div class="screen-subtitle">Choose your warehouse location</div>
+      <div class="location-list" id="location-list"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: ACTIONS -->
+  <div id="screen-actions" class="screen">
+    <div class="screen-body">
+      <div class="breadcrumb" id="actions-breadcrumb"></div>
+      <div class="screen-title">Select Action</div>
+      <div class="screen-subtitle">What would you like to record?</div>
+      <div class="action-grid">
+        <button class="action-card inbound" onclick="openForm('Inbound')">
+          <div class="action-card-icon">📥</div>
+          <div class="action-card-title">INBOUND</div>
+          <div class="action-card-desc">Record incoming stock & transfers</div>
+        </button>
+        <button class="action-card outbound" onclick="openForm('Outbound')">
+          <div class="action-card-icon">📤</div>
+          <div class="action-card-title">OUTBOUND</div>
+          <div class="action-card-desc">Record dispatched orders</div>
+        </button>
+        <button class="action-card returns" onclick="openForm('Returns')">
+          <div class="action-card-icon">🔄</div>
+          <div class="action-card-title">RETURNS</div>
+          <div class="action-card-desc">Record returned goods</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: FORM -->
+  <div id="screen-form" class="screen">
+    <div class="screen-body">
+      <button class="back-btn" onclick="goBack('actions')">← Back</button>
+      <div class="breadcrumb" id="form-breadcrumb"></div>
+      <div id="form-container"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: SUCCESS -->
+  <div id="screen-success" class="screen">
+    <div class="screen-body">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Submitted!</div>
+      <div class="success-sub" id="success-msg">Your entry has been saved successfully.</div>
+      <button class="submit-btn" style="margin-top:24px" onclick="goBack('locations')">New Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Google API scripts -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG — Replace with your own values
+// ═══════════════════════════════════════════════════════
+const CONFIG = {
+  CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyCOPfNFLSnMyUHcACVO496Pu2qn6wA-gow',
+  SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
+
+  // Google Sheets
+  SHEET_ID: '156_X_GlXs9lZOUF6nTMcincGL1mp98bY_Zb_oK32DMg',
+  FG_SHEET_GID: '0',
+  PM_SHEET_GID: '445834386',
+
+  // Drive folders
+  DRIVE_INBOUND_FOLDER: '1NL6i66Ath4zWxWDxoyWijC-IB2D9Qe4u',
+  DRIVE_OUTBOUND_FOLDER: '1IjrE5JZp2KJLqZFkuPTe_y2CBEwRsoaN',
+  DRIVE_RETURNS_FOLDER: '1UULjIV_SBCrpILPYeNvLHJhdFc56kkXm',
+};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let state = {
+  user: null,
+  accessToken: null,
+  location: null,
+  action: null,
+  fgProducts: [],
+  pmProducts: [],
+};
+
+// ═══════════════════════════════════════════════════════
+// LOCATIONS
+// ═══════════════════════════════════════════════════════
+const LOCATIONS = [
+  { name: 'Bangalore', icon: '🏙️' },
+  { name: 'Mumbai', icon: '🌆' },
+  { name: 'Hyderabad', icon: '🏰' },
+  { name: 'Chennai', icon: '⛪' },
+  { name: 'Pune', icon: '🌿' },
+  { name: 'Delhi', icon: '🕌' },
+  { name: 'Kolkata', icon: '🌉' },
+  { name: 'Factory', icon: '🏭' },
+  { name: 'Trichy store', icon: '🏪' },
+];
+
+// ═══════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  el.classList.add('active');
+  const header = document.getElementById('app-header');
+  header.style.display = (id === 'login') ? 'none' : 'flex';
+}
+
+function showLoader(msg = 'Processing…') {
+  document.getElementById('loader-text').textContent = msg;
+  document.getElementById('loader').classList.add('show');
+}
+function hideLoader() { document.getElementById('loader').classList.remove('show'); }
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = isError ? 'error show' : 'show';
+  setTimeout(() => t.className = isError ? 'error' : '', 3000);
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function goBack(to) {
+  if (to === 'locations') showScreen('locations');
+  else if (to === 'actions') showScreen('actions');
+}
+
+// ═══════════════════════════════════════════════════════
+// GOOGLE SIGN-IN
+// ═══════════════════════════════════════════════════════
+function signInWithGoogle() {
+  if (typeof google === 'undefined') {
+    showToast('Google API not loaded. Check internet.', true);
+    return;
+  }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.CLIENT_ID,
+    scope: CONFIG.SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { showToast('Sign-in failed: ' + resp.error, true); return; }
+      state.accessToken = resp.access_token;
+      await fetchUserInfo();
+    }
+  });
+  client.requestAccessToken({ prompt: 'consent' });
+}
+
+async function fetchUserInfo() {
+  showLoader('Signing you in…');
+  try {
+    const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + state.accessToken }
+    });
+    const data = await r.json();
+    state.user = { email: data.email, name: data.name, picture: data.picture };
+    renderUserBadge();
+    await fetchProductLists();
+    renderLocationList();
+    showScreen('locations');
+  } catch (e) {
+    showToast('Could not fetch user info.', true);
+  } finally {
+    hideLoader();
+  }
+}
+
+function handleLogout() {
+  if (!confirm('Sign out?')) return;
+  state = { user: null, accessToken: null, location: null, action: null, fgProducts: [], pmProducts: [] };
+  showScreen('login');
+}
+
+function renderUserBadge() {
+  const b = document.getElementById('user-badge');
+  if (state.user.picture) {
+    b.innerHTML = `<img class="user-avatar" src="${state.user.picture}" />`;
+  } else {
+    b.innerHTML = `<div class="user-initial">${state.user.name[0]}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// PRODUCT LISTS FROM SHEETS
+// ═══════════════════════════════════════════════════════
+async function fetchProductLists() {
+  try {
+    const [fg, pm] = await Promise.all([
+      fetchSheetValues(CONFIG.SHEET_ID, 'Products'),
+      fetchSheetValues(CONFIG.SHEET_ID, 'Packing material'),
+    ]);
+    state.fgProducts = (fg || []).flat().filter(Boolean);
+    state.pmProducts = (pm || []).flat().filter(Boolean);
+  } catch (e) {
+    console.warn('Could not load product lists:', e);
+  }
+}
+
+async function fetchSheetValues(sheetId, tabName) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}?key=${CONFIG.API_KEY}`;
+  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
+  const data = await r.json();
+  return data.values || [];
+}
+
+// ═══════════════════════════════════════════════════════
+// LOCATION LIST
+// ═══════════════════════════════════════════════════════
+function renderLocationList() {
+  const list = document.getElementById('location-list');
+  list.innerHTML = LOCATIONS.map(loc => `
+    <button class="location-btn" onclick="selectLocation('${loc.name}')">
+      <span class="loc-icon">${loc.icon}</span>
+      <span style="flex:1;padding:0 12px">${loc.name}</span>
+      <span class="loc-arrow">›</span>
+    </button>
+  `).join('');
+}
+
+function selectLocation(name) {
+  state.location = name;
+  document.getElementById('actions-breadcrumb').textContent = '📍 ' + name;
+  showScreen('actions');
+}
+
+// ═══════════════════════════════════════════════════════
+// OPEN FORM
+// ═══════════════════════════════════════════════════════
+function openForm(action) {
+  state.action = action;
+  document.getElementById('form-breadcrumb').textContent = `📍 ${state.location} › ${action}`;
+  const container = document.getElementById('form-container');
+
+  if (action === 'Inbound') container.innerHTML = buildInboundForm();
+  else if (action === 'Outbound') container.innerHTML = buildOutboundForm();
+  else container.innerHTML = buildReturnsForm();
+
+  showScreen('form');
+  initTabSwitching();
+}
+
+// ═══════════════════════════════════════════════════════
+// FORM BUILDERS
+// ═══════════════════════════════════════════════════════
+function buildInboundForm() {
+  return `
+    <div class="form-section">
+      <div class="form-section-title">📋 Basic Details</div>
+      ${fieldDate('ib-date', 'Date')}
+      ${fieldReadonly('ib-email', 'Executive Email', state.user.email)}
+      ${fieldText('ib-tn', 'Transfer Note No', true)}
+      ${fieldNumber('ib-boxes', 'Total Boxes Received', true)}
+      ${fieldFile('ib-image', 'Upload Image (Required)', true)}
+    </div>
+    ${buildProductsSection('ib')}
+    <button class="submit-btn" onclick="submitInbound()">Submit Inbound Entry</button>
+    <div style="height:40px"></div>
+  `;
+}
+
+function buildOutboundForm() {
+  return `
+    <div class="form-section">
+      <div class="form-section-title">📋 Basic Details</div>
+      ${fieldDate('ob-date', 'Date')}
+      ${fieldReadonly('ob-email', 'Executive Email', state.user.email)}
+      ${fieldText('ob-channel', 'Channel Name', true)}
+      ${fieldText('ob-invoice', 'Invoice No', true)}
+      ${fieldNumber('ob-boxes', 'Total No of Boxes', true)}
+      ${fieldFile('ob-image', 'Final Order Image (Required)', true)}
+    </div>
+    ${buildProductsSection('ob')}
+    <button class="submit-btn" onclick="submitOutbound()">Submit Outbound Entry</button>
+    <div style="height:40px"></div>
+  `;
+}
+
+function buildReturnsForm() {
+  return `
+    <div class="form-section">
+      <div class="form-section-title">📋 Basic Details</div>
+      ${fieldDate('rt-date', 'Date')}
+      ${fieldReadonly('rt-email', 'Executive Email', state.user.email)}
+      ${fieldText('rt-channel', 'Channel Name', true)}
+      ${fieldText('rt-credit', 'Credit Note No', true)}
+      ${fieldFile('rt-image', 'Upload Image (Required)', true)}
+    </div>
+    <div class="form-section">
+      <div class="form-section-title">📦 Returned Products</div>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="rt-fg">Finished Goods</button>
+      </div>
+      <div class="tab-pane active" id="rt-fg-pane">
+        <div id="rt-fg-rows">${buildReturnsFGRow(0)}</div>
+        <button class="add-row-btn" onclick="addRow('rt-fg','return-fg')">+ Add Product</button>
+      </div>
+    </div>
+    <button class="submit-btn" onclick="submitReturns()">Submit Returns Entry</button>
+    <div style="height:40px"></div>
+  `;
+}
+
+function buildProductsSection(prefix) {
+  const isOutbound = prefix === 'ob';
+  return `
+    <div class="form-section">
+      <div class="form-section-title">📦 Products</div>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="${prefix}-fg">Finished Goods</button>
+        <button class="tab-btn" data-tab="${prefix}-pm">Packing Material</button>
+      </div>
+      <div class="tab-pane active" id="${prefix}-fg-pane">
+        <div id="${prefix}-fg-rows">${isOutbound ? buildOutboundFGRow(0) : buildInboundFGRow(0)}</div>
+        <button class="add-row-btn" onclick="addRow('${prefix}-fg','${isOutbound ? 'outbound-fg' : 'inbound-fg'}')">+ Add Product</button>
+      </div>
+      <div class="tab-pane" id="${prefix}-pm-pane">
+        <div id="${prefix}-pm-rows">${isOutbound ? buildOutboundPMRow(0) : buildInboundPMRow(0)}</div>
+        <button class="add-row-btn" onclick="addRow('${prefix}-pm','${isOutbound ? 'outbound-pm' : 'inbound-pm'}')">+ Add Product</button>
+      </div>
+    </div>
+  `;
+}
+
+// ── Row builders ──
+function fgDropdown(id) {
+  const opts = state.fgProducts.length
+    ? state.fgProducts.map(p => `<option value="${p}">${p}</option>`).join('')
+    : '<option value="">No products loaded</option>';
+  return `<select id="${id}" required><option value="">Select Product</option>${opts}</select>`;
+}
+function pmDropdown(id) {
+  const opts = state.pmProducts.length
+    ? state.pmProducts.map(p => `<option value="${p}">${p}</option>`).join('')
+    : '<option value="">No products loaded</option>';
+  return `<select id="${id}" required><option value="">Select Product</option>${opts}</select>`;
+}
+
+function buildInboundFGRow(i) {
+  return `<div class="product-row" id="ib-fg-row-${i}">
+    <div class="product-row-num">Product #${i+1}</div>
+    ${i>0?`<button class="remove-row-btn" onclick="removeRow('ib-fg-row-${i}')">×</button>`:''}
+    <div class="field"><label>Product <span class="req">*</span></label>${fgDropdown('ib-fg-prod-'+i)}</div>
+    <div class="field"><label>Batch No <span class="req">*</span></label><input type="text" id="ib-fg-batch-${i}" required /></div>
+    <div class="field"><label>Received Qty <span class="req">*</span></label><input type="number" id="ib-fg-rqty-${i}" min="0" required /></div>
+    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="ib-fg-uqty-${i}" min="0" required /></div>
+  </div>`;
+}
+
+function buildInboundPMRow(i) {
+  return `<div class="product-row" id="ib-pm-row-${i}">
+    <div class="product-row-num">Item #${i+1}</div>
+    ${i>0?`<button class="remove-row-btn" onclick="removeRow('ib-pm-row-${i}')">×</button>`:''}
+    <div class="field"><label>Product <span class="req">*</span></label>${pmDropdown('ib-pm-prod-'+i)}</div>
+    <div class="field"><label>Received Qty <span class="req">*</span></label><input type="number" id="ib-pm-rqty-${i}" min="0" required /></div>
+    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="ib-pm-uqty-${i}" min="0" required /></div>
+  </div>`;
+}
+
+function buildOutboundFGRow(i) {
+  return `<div class="product-row" id="ob-fg-row-${i}">
+    <div class="product-row-num">Product #${i+1}</div>
+    ${i>0?`<button class="remove-row-btn" onclick="removeRow('ob-fg-row-${i}')">×</button>`:''}
+    <div class="field"><label>Product <span class="req">*</span></label>${fgDropdown('ob-fg-prod-'+i)}</div>
+    <div class="field"><label>Batch No <span class="req">*</span></label><input type="text" id="ob-fg-batch-${i}" required /></div>
+    <div class="field"><label>Sent Qty <span class="req">*</span></label><input type="number" id="ob-fg-sqty-${i}" min="0" required /></div>
+  </div>`;
+}
+
+function buildOutboundPMRow(i) {
+  return `<div class="product-row" id="ob-pm-row-${i}">
+    <div class="product-row-num">Item #${i+1}</div>
+    ${i>0?`<button class="remove-row-btn" onclick="removeRow('ob-pm-row-${i}')">×</button>`:''}
+    <div class="field"><label>Product <span class="req">*</span></label>${pmDropdown('ob-pm-prod-'+i)}</div>
+    <div class="field"><label>Sent Qty <span class="req">*</span></label><input type="number" id="ob-pm-sqty-${i}" min="0" required /></div>
+  </div>`;
+}
+
+function buildReturnsFGRow(i) {
+  return `<div class="product-row" id="rt-fg-row-${i}">
+    <div class="product-row-num">Product #${i+1}</div>
+    ${i>0?`<button class="remove-row-btn" onclick="removeRow('rt-fg-row-${i}')">×</button>`:''}
+    <div class="field"><label>Product Code <span class="req">*</span></label>${fgDropdown('rt-fg-prod-'+i)}</div>
+    <div class="field"><label>Product Batch No <span class="req">*</span></label><input type="text" id="rt-fg-batch-${i}" required /></div>
+    <div class="field"><label>Returned Qty <span class="req">*</span></label><input type="number" id="rt-fg-rqty-${i}" min="0" required /></div>
+    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="rt-fg-uqty-${i}" min="0" required /></div>
+  </div>`;
+}
+
+// ── Dynamic row management ──
+const rowCounters = {};
+function addRow(prefix, type) {
+  if (!rowCounters[prefix]) rowCounters[prefix] = 1;
+  const i = rowCounters[prefix]++;
+  const container = document.getElementById(prefix + '-rows');
+  const div = document.createElement('div');
+  div.innerHTML = type === 'inbound-fg' ? buildInboundFGRow(i)
+                : type === 'inbound-pm' ? buildInboundPMRow(i)
+                : type === 'outbound-fg' ? buildOutboundFGRow(i)
+                : type === 'outbound-pm' ? buildOutboundPMRow(i)
+                : buildReturnsFGRow(i);
+  container.appendChild(div.firstElementChild);
+}
+function removeRow(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════
+function initTabSwitching() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tab = this.dataset.tab;
+      const tabBar = this.closest('.tab-bar');
+      tabBar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const section = this.closest('.form-section');
+      section.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const pane = document.getElementById(tab + '-pane');
+      if (pane) pane.classList.add('active');
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// FIELD HELPERS
+// ═══════════════════════════════════════════════════════
+function fieldDate(id, label) {
+  return `<div class="field"><label>${label}</label>
+    <input type="date" id="${id}" value="${todayStr()}" /></div>`;
+}
+function fieldReadonly(id, label, value) {
+  return `<div class="field"><label>${label}</label>
+    <input type="text" id="${id}" value="${value}" readonly /></div>`;
+}
+function fieldText(id, label, req = false) {
+  return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
+    <input type="text" id="${id}" ${req?'required':''} /></div>`;
+}
+function fieldNumber(id, label, req = false) {
+  return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
+    <input type="number" id="${id}" min="0" ${req?'required':''} /></div>`;
+}
+function fieldFile(id, label, req = false) {
+  return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
+    <input type="file" id="${id}" accept="image/*" capture="environment" ${req?'required':''} />
+    <div class="file-hint">Tap to take photo or pick from gallery</div></div>`;
+}
+
+function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function getFile(id) { const el = document.getElementById(id); return el && el.files[0] ? el.files[0] : null; }
+
+// ═══════════════════════════════════════════════════════
+// COLLECT PRODUCT ROWS
+// ═══════════════════════════════════════════════════════
+function collectRows(prefix, type) {
+  const container = document.getElementById(prefix + '-rows');
+  if (!container) return [];
+  return Array.from(container.querySelectorAll('.product-row')).map(row => {
+    const idMatch = row.id.match(/-(\d+)$/);
+    const i = idMatch ? idMatch[1] : 0;
+    if (type === 'inbound-fg') return {
+      product: row.querySelector(`select`).value,
+      batch: row.querySelector(`input[type=text]`).value,
+      receivedQty: row.querySelectorAll(`input[type=number]`)[0].value,
+      usableQty: row.querySelectorAll(`input[type=number]`)[1].value,
+    };
+    if (type === 'inbound-pm') return {
+      product: row.querySelector(`select`).value,
+      receivedQty: row.querySelectorAll(`input[type=number]`)[0].value,
+      usableQty: row.querySelectorAll(`input[type=number]`)[1].value,
+    };
+    if (type === 'outbound-fg') return {
+      product: row.querySelector(`select`).value,
+      batch: row.querySelector(`input[type=text]`).value,
+      sentQty: row.querySelector(`input[type=number]`).value,
+    };
+    if (type === 'outbound-pm') return {
+      product: row.querySelector(`select`).value,
+      sentQty: row.querySelector(`input[type=number]`).value,
+    };
+    if (type === 'return-fg') return {
+      product: row.querySelector(`select`).value,
+      batch: row.querySelector(`input[type=text]`).value,
+      returnedQty: row.querySelectorAll(`input[type=number]`)[0].value,
+      usableQty: row.querySelectorAll(`input[type=number]`)[1].value,
+    };
+    return {};
+  }).filter(r => r.product);
+}
+
+// ═══════════════════════════════════════════════════════
+// SUBMIT INBOUND
+// ═══════════════════════════════════════════════════════
+async function submitInbound() {
+  const date = getVal('ib-date');
+  const tn = getVal('ib-tn');
+  const boxes = getVal('ib-boxes');
+  const image = getFile('ib-image');
+
+  if (!tn || !boxes || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
+
+  showLoader('Uploading image…');
+  try {
+    const fileName = `${state.location}_${tn}_${date}`;
+    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_INBOUND_FOLDER);
+
+    const fgRows = collectRows('ib-fg', 'inbound-fg');
+    const pmRows = collectRows('ib-pm', 'inbound-pm');
+
+    showLoader('Saving to spreadsheet…');
+    const sheetName = `${state.location}_Inbound`;
+    const rows = buildInboundRows(date, state.user.email, tn, boxes, driveUrl, fgRows, pmRows);
+    await appendToSheet(sheetName, rows);
+
+    showSuccess(`Inbound entry saved for ${state.location}`);
+  } catch (e) {
+    console.error(e);
+    showToast('Error: ' + e.message, true);
+  } finally {
+    hideLoader();
+  }
+}
+
+function buildInboundRows(date, email, tn, boxes, imageUrl, fgRows, pmRows) {
+  const rows = [];
+  if (!fgRows.length && !pmRows.length) {
+    rows.push([date, email, tn, boxes, imageUrl, '', '', '', '', '', '', '']);
+  }
+  fgRows.forEach(r => {
+    rows.push([date, email, tn, boxes, imageUrl, 'Finished Goods', r.product, r.batch, r.receivedQty, r.usableQty, '', '']);
+  });
+  pmRows.forEach(r => {
+    rows.push([date, email, tn, boxes, imageUrl, 'Packing Material', r.product, '', r.receivedQty, r.usableQty, '', '']);
+  });
+  return rows;
+}
+
+// ═══════════════════════════════════════════════════════
+// SUBMIT OUTBOUND
+// ═══════════════════════════════════════════════════════
+async function submitOutbound() {
+  const date = getVal('ob-date');
+  const channel = getVal('ob-channel');
+  const invoice = getVal('ob-invoice');
+  const boxes = getVal('ob-boxes');
+  const image = getFile('ob-image');
+
+  if (!channel || !invoice || !boxes || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
+
+  showLoader('Uploading image…');
+  try {
+    const fileName = `${state.location}_${channel}_${invoice}`;
+    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_OUTBOUND_FOLDER);
+
+    const fgRows = collectRows('ob-fg', 'outbound-fg');
+    const pmRows = collectRows('ob-pm', 'outbound-pm');
+
+    showLoader('Saving to spreadsheet…');
+    const sheetName = `${state.location}_Outbound`;
+    const rows = buildOutboundRows(date, state.user.email, channel, invoice, boxes, driveUrl, fgRows, pmRows);
+    await appendToSheet(sheetName, rows);
+
+    showSuccess(`Outbound entry saved for ${state.location}`);
+  } catch (e) {
+    console.error(e);
+    showToast('Error: ' + e.message, true);
+  } finally {
+    hideLoader();
+  }
+}
+
+function buildOutboundRows(date, email, channel, invoice, boxes, imageUrl, fgRows, pmRows) {
+  const rows = [];
+  if (!fgRows.length && !pmRows.length) {
+    rows.push([date, email, channel, invoice, boxes, imageUrl, '', '', '', '', '']);
+  }
+  fgRows.forEach(r => {
+    rows.push([date, email, channel, invoice, boxes, imageUrl, 'Finished Goods', r.product, r.batch, r.sentQty, '']);
+  });
+  pmRows.forEach(r => {
+    rows.push([date, email, channel, invoice, boxes, imageUrl, 'Packing Material', r.product, '', r.sentQty, '']);
+  });
+  return rows;
+}
+
+// ═══════════════════════════════════════════════════════
+// SUBMIT RETURNS
+// ═══════════════════════════════════════════════════════
+async function submitReturns() {
+  const date = getVal('rt-date');
+  const channel = getVal('rt-channel');
+  const credit = getVal('rt-credit');
+  const image = getFile('rt-image');
+
+  if (!channel || !credit || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
+
+  showLoader('Uploading image…');
+  try {
+    const fileName = `${state.location}_${channel}_${credit}`;
+    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_RETURNS_FOLDER);
+
+    const fgRows = collectRows('rt-fg', 'return-fg');
+
+    showLoader('Saving to spreadsheet…');
+    const sheetName = `${state.location}_Returns`;
+    const rows = buildReturnsRows(date, state.user.email, channel, credit, driveUrl, fgRows);
+    await appendToSheet(sheetName, rows);
+
+    showSuccess(`Returns entry saved for ${state.location}`);
+  } catch (e) {
+    console.error(e);
+    showToast('Error: ' + e.message, true);
+  } finally {
+    hideLoader();
+  }
+}
+
+function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
+  if (!fgRows.length) return [[date, email, channel, credit, imageUrl, '', '', '', '']];
+  return fgRows.map(r => [date, email, channel, credit, imageUrl, r.product, r.batch, r.returnedQty, r.usableQty]);
+}
+
+// ═══════════════════════════════════════════════════════
+// GOOGLE DRIVE UPLOAD
+// ═══════════════════════════════════════════════════════
+async function uploadToDrive(file, fileName, folderId) {
+  const safeName = fileName.replace(/[\/\\:*?"<>|]/g, '_');
+  const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
+  const fullName = safeName + '.' + ext;
+  const mimeType = file.type || 'image/jpeg';
+  const fileBytes = await file.arrayBuffer();
+
+  const doUpload = async (parents) => {
+    const metadata = { name: fullName };
+    if (parents.length) metadata.parents = parents;
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append('file', new Blob([fileBytes], { type: mimeType }));
+    const resp = await fetch(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',
+      { method: 'POST', headers: { Authorization: 'Bearer ' + state.accessToken }, body: form }
+    );
+    const json = await resp.json();
+    return { ok: resp.ok, status: resp.status, json };
+  };
+
+  // Attempt 1: upload into specified folder
+  let result = await doUpload([folderId]);
+
+  // Attempt 2: if folder not found/accessible, fall back to root My Drive
+  if (!result.ok) {
+    const errMsg = result.json?.error?.message || '';
+    const errStatus = result.json?.error?.status || '';
+    if (errStatus === 'NOT_FOUND' || result.status === 404 || errMsg.toLowerCase().includes('not found')) {
+      showToast('Folder not accessible — saving to My Drive root instead', false);
+      result = await doUpload([]);  // no parents = root Drive
+    }
+  }
+
+  // Still failing — throw with clear message
+  if (!result.ok) {
+    const msg = result.json?.error?.message || JSON.stringify(result.json);
+    if (result.status === 403) {
+      throw new Error('Drive permission denied. Sign out, sign back in, and approve ALL permissions including Google Drive.');
+    }
+    throw new Error('Drive upload failed (' + result.status + '): ' + msg);
+  }
+
+  const fileId = result.json.id;
+
+  // Make the uploaded file viewable by anyone with the link
+  await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + state.accessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role: 'reader', type: 'anyone' }),
+  }).catch(() => {});
+
+  return result.json.webViewLink || 'https://drive.google.com/file/d/' + fileId + '/view';
+}
+
+// ═══════════════════════════════════════════════════════
+// GOOGLE SHEETS APPEND
+// ═══════════════════════════════════════════════════════
+async function appendToSheet(sheetName, rows) {
+  // Ensure sheet exists
+  await ensureSheet(sheetName);
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${encodeURIComponent(sheetName)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + state.accessToken,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ values: rows }),
+  });
+  if (!r.ok) {
+    const err = await r.json();
+    throw new Error('Sheets append failed: ' + JSON.stringify(err.error?.message || err));
+  }
+}
+
+async function ensureSheet(sheetName) {
+  // Get existing sheets
+  const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}?fields=sheets.properties.title`, {
+    headers: { Authorization: 'Bearer ' + state.accessToken },
+  });
+  const data = await r.json();
+  const existing = (data.sheets || []).map(s => s.properties.title);
+  if (existing.includes(sheetName)) return;
+
+  // Create the sheet
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}:batchUpdate`, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + state.accessToken,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      requests: [{ addSheet: { properties: { title: sheetName } } }],
+    }),
+  });
+
+  // Add headers
+  const headers = sheetName.endsWith('_Inbound')
+    ? [['Date', 'Executive Email', 'Transfer Note No', 'Total Boxes', 'Image URL', 'Product Type', 'Product', 'Batch No', 'Received Qty', 'Usable Qty', '', '']]
+    : sheetName.endsWith('_Outbound')
+    ? [['Date', 'Executive Email', 'Channel Name', 'Invoice No', 'Total Boxes', 'Image URL', 'Product Type', 'Product', 'Batch No', 'Sent Qty', '']]
+    : [['Date', 'Executive Email', 'Channel Name', 'Credit Note No', 'Image URL', 'Product', 'Batch No', 'Returned Qty', 'Usable Qty']];
+
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${encodeURIComponent(sheetName)}:append?valueInputOption=USER_ENTERED`, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + state.accessToken,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ values: headers }),
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// SUCCESS
+// ═══════════════════════════════════════════════════════
+function showSuccess(msg) {
+  document.getElementById('success-msg').textContent = msg;
+  showScreen('success');
+}
+</script>
+</body>
+</html>
