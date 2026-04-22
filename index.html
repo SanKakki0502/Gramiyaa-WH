@@ -531,11 +531,10 @@
 // ═══════════════════════════════════════════════════════
 // CONFIG — Replace with your own values
 // ═══════════════════════════════════════════════════════
-const key = process.env.API_WH;
-console.log(key);
+
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
-  API_KEY: 'key',
+  API_KEY: 'process.env.API_WH',
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
