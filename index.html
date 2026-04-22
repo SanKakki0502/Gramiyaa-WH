@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Gramiyaa_WH v5 — no API key, fixed login screen, 30-day session -->
+<!-- Gramiyaa_WH v6 — gallery picker, usable qty validation -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -106,9 +106,6 @@
       text-align: center;
       padding: 40px 24px;
     }
-    /* Screens use flex when active, hidden when not */
-    .screen.active { display: flex !important; }
-    .screen:not(.active) { display: none !important; }
 
     .login-logo-wrap {
       margin-bottom: 32px;
@@ -433,6 +430,20 @@
     }
     .success-sub { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
 
+    /* qty validation error */
+    .qty-error {
+      color: #ff6b6b;
+      font-size: 0.75rem;
+      margin-top: 4px;
+      min-height: 0;
+      display: none;
+    }
+    .qty-error.visible { display: block; }
+    .field input.qty-invalid {
+      border-color: #ff6b6b !important;
+      background: rgba(255, 107, 107, 0.08);
+    }
+
     /* scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -454,7 +465,7 @@
   </header>
 
   <!-- SCREEN: LOGIN -->
-  <div id="screen-login" class="screen active">
+  <div id="screen-login" class="screen active" style="display:flex">
     <div class="login-logo-wrap">
       <div class="login-icon">🌾</div>
       <div class="login-title">GRAMIYAA_WH</div>
@@ -530,6 +541,7 @@
 // ═══════════════════════════════════════════════════════
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyCOPfNFLSnMyUHcACVO496Pu2qn6wA-gow',
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
@@ -604,37 +616,6 @@ function goBack(to) {
 }
 
 // ═══════════════════════════════════════════════════════
-// SESSION PERSISTENCE  (30-day login memory)
-// Stores user profile in localStorage; OAuth token is always
-// refreshed silently — only the profile/email is persisted.
-// ═══════════════════════════════════════════════════════
-const SESSION_KEY = 'gramiyaa_wh_session';
-const SESSION_DAYS = 30;
-
-function saveSession(user) {
-  const payload = { user, savedAt: Date.now() };
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify(payload)); } catch(e) {}
-}
-
-function loadSession() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    const payload = JSON.parse(raw);
-    const ageMs = Date.now() - payload.savedAt;
-    if (ageMs > SESSION_DAYS * 24 * 60 * 60 * 1000) {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-    return payload.user;
-  } catch(e) { return null; }
-}
-
-function clearSession() {
-  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
-}
-
-// ═══════════════════════════════════════════════════════
 // GOOGLE SIGN-IN
 // ═══════════════════════════════════════════════════════
 function signInWithGoogle() {
@@ -648,75 +629,33 @@ function signInWithGoogle() {
     callback: async (resp) => {
       if (resp.error) { showToast('Sign-in failed: ' + resp.error, true); return; }
       state.accessToken = resp.access_token;
-      await fetchUserInfo(true);
+      await fetchUserInfo();
     }
   });
-  // Only show consent screen on first-ever login; silent otherwise
-  client.requestAccessToken();
+  client.requestAccessToken({ prompt: 'consent' });
 }
 
-async function fetchUserInfo(saveToSession = false) {
+async function fetchUserInfo() {
   showLoader('Signing you in…');
   try {
     const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: 'Bearer ' + state.accessToken }
     });
-    if (!r.ok) throw new Error('userinfo failed');
     const data = await r.json();
     state.user = { email: data.email, name: data.name, picture: data.picture };
-    if (saveToSession) saveSession(state.user);
     renderUserBadge();
     await fetchProductLists();
     renderLocationList();
     showScreen('locations');
   } catch (e) {
-    clearSession();
-    showToast('Sign-in failed. Please try again.', true);
-    showScreen('login');
+    showToast('Could not fetch user info.', true);
   } finally {
     hideLoader();
   }
 }
 
-// Silent token refresh — called on app start if session exists
-// Gets a fresh OAuth token without showing any UI
-function silentTokenRefresh(savedUser) {
-  if (typeof google === 'undefined') {
-    // Google script not loaded yet — wait and retry
-    setTimeout(() => silentTokenRefresh(savedUser), 500);
-    return;
-  }
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: CONFIG.CLIENT_ID,
-    scope: CONFIG.SCOPES,
-    hint: savedUser.email,   // pre-select the saved account
-    callback: async (resp) => {
-      if (resp.error || !resp.access_token) {
-        // Silent refresh failed — ask user to sign in again
-        clearSession();
-        hideLoader();
-        showScreen('login');
-        return;
-      }
-      state.accessToken = resp.access_token;
-      state.user = savedUser;
-      renderUserBadge();
-      await fetchProductLists();
-      renderLocationList();
-      hideLoader();
-      showScreen('locations');
-    }
-  });
-  // prompt: '' means no UI shown — purely silent
-  client.requestAccessToken({ prompt: '' });
-}
-
 function handleLogout() {
   if (!confirm('Sign out?')) return;
-  clearSession();
-  if (typeof google !== 'undefined') {
-    google.accounts.oauth2.revoke(state.accessToken, () => {});
-  }
   state = { user: null, accessToken: null, location: null, action: null, fgProducts: [], pmProducts: [] };
   showScreen('login');
 }
@@ -747,7 +686,7 @@ async function fetchProductLists() {
 }
 
 async function fetchSheetValues(sheetId, tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}?key=${CONFIG.API_KEY}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
   return data.values || [];
@@ -891,8 +830,8 @@ function buildInboundFGRow(i) {
     ${i>0?`<button class="remove-row-btn" onclick="removeRow('ib-fg-row-${i}')">×</button>`:''}
     <div class="field"><label>Product <span class="req">*</span></label>${fgDropdown('ib-fg-prod-'+i)}</div>
     <div class="field"><label>Batch No <span class="req">*</span></label><input type="text" id="ib-fg-batch-${i}" required /></div>
-    <div class="field"><label>Received Qty <span class="req">*</span></label><input type="number" id="ib-fg-rqty-${i}" min="0" required /></div>
-    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="ib-fg-uqty-${i}" min="0" required /></div>
+    <div class="field"><label>Received Qty <span class="req">*</span></label><input type="number" id="ib-fg-rqty-${i}" min="0" required oninput="validateUsable('ib-fg-rqty-${i}','ib-fg-uqty-${i}')" /></div>
+    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="ib-fg-uqty-${i}" min="0" required oninput="validateUsable('ib-fg-rqty-${i}','ib-fg-uqty-${i}')" /><div class="qty-error" id="ib-fg-uqty-err-${i}"></div></div>
   </div>`;
 }
 
@@ -901,8 +840,8 @@ function buildInboundPMRow(i) {
     <div class="product-row-num">Item #${i+1}</div>
     ${i>0?`<button class="remove-row-btn" onclick="removeRow('ib-pm-row-${i}')">×</button>`:''}
     <div class="field"><label>Product <span class="req">*</span></label>${pmDropdown('ib-pm-prod-'+i)}</div>
-    <div class="field"><label>Received Qty <span class="req">*</span></label><input type="number" id="ib-pm-rqty-${i}" min="0" required /></div>
-    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="ib-pm-uqty-${i}" min="0" required /></div>
+    <div class="field"><label>Received Qty <span class="req">*</span></label><input type="number" id="ib-pm-rqty-${i}" min="0" required oninput="validateUsable('ib-pm-rqty-${i}','ib-pm-uqty-${i}')" /></div>
+    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="ib-pm-uqty-${i}" min="0" required oninput="validateUsable('ib-pm-rqty-${i}','ib-pm-uqty-${i}')" /><div class="qty-error" id="ib-pm-uqty-err-${i}"></div></div>
   </div>`;
 }
 
@@ -931,8 +870,8 @@ function buildReturnsFGRow(i) {
     ${i>0?`<button class="remove-row-btn" onclick="removeRow('rt-fg-row-${i}')">×</button>`:''}
     <div class="field"><label>Product Code <span class="req">*</span></label>${fgDropdown('rt-fg-prod-'+i)}</div>
     <div class="field"><label>Product Batch No <span class="req">*</span></label><input type="text" id="rt-fg-batch-${i}" required /></div>
-    <div class="field"><label>Returned Qty <span class="req">*</span></label><input type="number" id="rt-fg-rqty-${i}" min="0" required /></div>
-    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="rt-fg-uqty-${i}" min="0" required /></div>
+    <div class="field"><label>Returned Qty <span class="req">*</span></label><input type="number" id="rt-fg-rqty-${i}" min="0" required oninput="validateUsable('rt-fg-rqty-${i}','rt-fg-uqty-${i}')" /></div>
+    <div class="field"><label>Usable Qty <span class="req">*</span></label><input type="number" id="rt-fg-uqty-${i}" min="0" required oninput="validateUsable('rt-fg-rqty-${i}','rt-fg-uqty-${i}')" /><div class="qty-error" id="rt-fg-uqty-err-${i}"></div></div>
   </div>`;
 }
 
@@ -994,8 +933,51 @@ function fieldNumber(id, label, req = false) {
 }
 function fieldFile(id, label, req = false) {
   return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
-    <input type="file" id="${id}" accept="image/*" capture="environment" ${req?'required':''} />
+    <input type="file" id="${id}" accept="image/*" ${req?'required':'' />
     <div class="file-hint">Tap to take photo or pick from gallery</div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// QTY VALIDATION — Usable cannot exceed Received/Returned
+// ═══════════════════════════════════════════════════════
+function validateUsable(refId, usableId) {
+  const refEl    = document.getElementById(refId);
+  const usableEl = document.getElementById(usableId);
+  if (!refEl || !usableEl) return true;
+
+  // Derive the error div id: replace last field segment with "err"
+  // e.g. "ib-fg-uqty-0" → "ib-fg-uqty-err-0"
+  const errId  = usableId.replace(/^(.*?)(\d+)$/, '$1err-$2');
+  const errEl  = document.getElementById(errId);
+
+  const refVal    = parseFloat(refEl.value);
+  const usableVal = parseFloat(usableEl.value);
+
+  const isInvalid = !isNaN(refVal) && !isNaN(usableVal) && usableVal > refVal;
+
+  usableEl.classList.toggle('qty-invalid', isInvalid);
+  if (errEl) {
+    errEl.textContent = isInvalid
+      ? `⚠ Usable qty (${usableVal}) cannot exceed ${refEl.closest('.field')?.previousElementSibling?.querySelector('label')?.textContent?.trim()?.replace(' *','') || 'received'} qty (${refVal})`
+      : '';
+    errEl.classList.toggle('visible', isInvalid);
+  }
+  return !isInvalid;
+}
+
+// Validate all usable qty fields in a container prefix; returns true if all ok
+function validateAllUsable(prefix, refSuffix, usableSuffix) {
+  let valid = true;
+  document.querySelectorAll(`[id^="${prefix}"][id$="${usableSuffix}"]`).forEach(usableEl => {
+    const idx = usableEl.id.match(/\d+$/)?.[0];
+    if (idx !== undefined) {
+      const refEl = document.getElementById(prefix + refSuffix + idx);
+      if (refEl) {
+        if (!validateUsable(refEl.id, usableEl.id)) valid = false;
+      }
+    }
+  });
+  return valid;
 }
 
 function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
@@ -1050,6 +1032,14 @@ async function submitInbound() {
   const image = getFile('ib-image');
 
   if (!tn || !boxes || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
+
+  // Validate usable qtys don't exceed received qtys
+  const ibFgValid = validateAllUsable('ib-fg-', 'rqty-', 'uqty-');
+  const ibPmValid = validateAllUsable('ib-pm-', 'rqty-', 'uqty-');
+  if (!ibFgValid || !ibPmValid) {
+    showToast('⚠ Usable qty cannot exceed Received qty. Please fix highlighted fields.', true);
+    return;
+  }
 
   showLoader('Uploading image…');
   try {
@@ -1146,6 +1136,13 @@ async function submitReturns() {
 
   if (!channel || !credit || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
 
+  // Validate usable qtys don't exceed returned qtys
+  const rtValid = validateAllUsable('rt-fg-', 'rqty-', 'uqty-');
+  if (!rtValid) {
+    showToast('⚠ Usable qty cannot exceed Returned qty. Please fix highlighted fields.', true);
+    return;
+  }
+
   showLoader('Uploading image…');
   try {
     const fileName = `${state.location}_${channel}_${credit}`;
@@ -1172,58 +1169,47 @@ function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
   return fgRows.map(r => [date, email, channel, credit, imageUrl, r.product, r.batch, r.returnedQty, r.usableQty]);
 }
 
-// ════════════════════════════════════════════════════════
-// GOOGLE DRIVE UPLOAD  (with root-Drive fallback)
-// ════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// GOOGLE DRIVE UPLOAD
+// ═══════════════════════════════════════════════════════
 async function uploadToDrive(file, fileName, folderId) {
   const safeName = fileName.replace(/[\/\\:*?"<>|]/g, '_');
   const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
-  const fullName = safeName + '.' + ext;
+  const fullName = `${safeName}.${ext}`;
   const mimeType = file.type || 'image/jpeg';
-  const fileBytes = await file.arrayBuffer();
 
-  const attempt = async (parentId) => {
-    const meta = { name: fullName };
-    if (parentId) meta.parents = [parentId];
-    const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
-    form.append('file', new Blob([fileBytes], { type: mimeType }));
-    const res = await fetch(
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',
-      { method: 'POST', headers: { Authorization: 'Bearer ' + state.accessToken }, body: form }
-    );
-    const json = await res.json();
-    return { ok: res.ok, status: res.status, json };
-  };
+  const metadata = { name: fullName, parents: [folderId] };
 
-  // Try 1: upload into the specified folder
-  let r = await attempt(folderId);
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+  form.append('file', new Blob([await file.arrayBuffer()], { type: mimeType }));
 
-  // Try 2: folder inaccessible → fall back to root My Drive
+  const r = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + state.accessToken }, body: form }
+  );
+  const data = await r.json();
+
   if (!r.ok) {
-    const errStatus = (r.json?.error?.status || '').toUpperCase();
-    const errMsg    = (r.json?.error?.message || '').toLowerCase();
-    if (r.status === 404 || errStatus === 'NOT_FOUND' || errMsg.includes('not found')) {
-      showToast('⚠️ Saving to My Drive (share the folder with your account for correct placement)', false);
-      r = await attempt(null);
+    const msg = data?.error?.message || JSON.stringify(data);
+    const status = data?.error?.status || '';
+    if (status === 'NOT_FOUND' || msg.includes('File not found')) {
+      throw new Error(`Drive folder not accessible (ID: ${folderId}).\n\nFix: Open the Drive folder → Share → add your Google account as Editor. Then sign out and sign back in.`);
     }
+    if (r.status === 403 || status === 'PERMISSION_DENIED') {
+      throw new Error(`Drive permission denied.\n\nFix: Sign out, sign back in, and re-approve all permissions when prompted.\n\nDetail: ${msg}`);
+    }
+    throw new Error(`Drive upload failed (${r.status}): ${msg}`);
   }
 
-  if (!r.ok) {
-    const msg = r.json?.error?.message || JSON.stringify(r.json);
-    if (r.status === 401) throw new Error('Session expired — please sign out and sign back in.');
-    if (r.status === 403) throw new Error('Drive access denied — sign out, sign back in, approve all permissions.');
-    throw new Error('Drive upload failed (' + r.status + '): ' + msg);
-  }
-
-  const fileId = r.json.id;
-  await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions', {
+  // Make file viewable by anyone with link (non-fatal if fails)
+  await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + state.accessToken, 'Content-Type': 'application/json' },
     body: JSON.stringify({ role: 'reader', type: 'anyone' }),
   }).catch(() => {});
 
-  return r.json.webViewLink || 'https://drive.google.com/file/d/' + fileId + '/view';
+  return data.webViewLink || `https://drive.google.com/file/d/${data.id}/view`;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1293,22 +1279,6 @@ function showSuccess(msg) {
   document.getElementById('success-msg').textContent = msg;
   showScreen('success');
 }
-
-// ═══════════════════════════════════════════════════════
-// APP STARTUP — check for saved session first
-// ═══════════════════════════════════════════════════════
-(function initApp() {
-  const savedUser = loadSession();
-  if (savedUser) {
-    // Session found — show loader and silently refresh OAuth token
-    showLoader('Resuming session…');
-    // Delay slightly to let Google GIS script load
-    setTimeout(() => silentTokenRefresh(savedUser), 800);
-  } else {
-    // No session — show login screen
-    showScreen('login');
-  }
-})();
 </script>
 </body>
 </html>
