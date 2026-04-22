@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Gramiyaa_WH v5 — no API key, fixed login screen, 30-day session -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -105,6 +106,9 @@
       text-align: center;
       padding: 40px 24px;
     }
+    /* Screens use flex when active, hidden when not */
+    .screen.active { display: flex !important; }
+    .screen:not(.active) { display: none !important; }
 
     .login-logo-wrap {
       margin-bottom: 32px;
@@ -450,7 +454,7 @@
   </header>
 
   <!-- SCREEN: LOGIN -->
-  <div id="screen-login" class="screen active" style="display:flex">
+  <div id="screen-login" class="screen active">
     <div class="login-logo-wrap">
       <div class="login-icon">🌾</div>
       <div class="login-title">GRAMIYAA_WH</div>
@@ -526,7 +530,6 @@
 // ═══════════════════════════════════════════════════════
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
-  API_KEY: 'AIzaSyCOPfNFLSnMyUHcACVO496Pu2qn6wA-gow',
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
@@ -601,6 +604,37 @@ function goBack(to) {
 }
 
 // ═══════════════════════════════════════════════════════
+// SESSION PERSISTENCE  (30-day login memory)
+// Stores user profile in localStorage; OAuth token is always
+// refreshed silently — only the profile/email is persisted.
+// ═══════════════════════════════════════════════════════
+const SESSION_KEY = 'gramiyaa_wh_session';
+const SESSION_DAYS = 30;
+
+function saveSession(user) {
+  const payload = { user, savedAt: Date.now() };
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(payload)); } catch(e) {}
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const payload = JSON.parse(raw);
+    const ageMs = Date.now() - payload.savedAt;
+    if (ageMs > SESSION_DAYS * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return payload.user;
+  } catch(e) { return null; }
+}
+
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
 // GOOGLE SIGN-IN
 // ═══════════════════════════════════════════════════════
 function signInWithGoogle() {
@@ -614,33 +648,75 @@ function signInWithGoogle() {
     callback: async (resp) => {
       if (resp.error) { showToast('Sign-in failed: ' + resp.error, true); return; }
       state.accessToken = resp.access_token;
-      await fetchUserInfo();
+      await fetchUserInfo(true);
     }
   });
-  client.requestAccessToken({ prompt: 'consent' });
+  // Only show consent screen on first-ever login; silent otherwise
+  client.requestAccessToken();
 }
 
-async function fetchUserInfo() {
+async function fetchUserInfo(saveToSession = false) {
   showLoader('Signing you in…');
   try {
     const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: 'Bearer ' + state.accessToken }
     });
+    if (!r.ok) throw new Error('userinfo failed');
     const data = await r.json();
     state.user = { email: data.email, name: data.name, picture: data.picture };
+    if (saveToSession) saveSession(state.user);
     renderUserBadge();
     await fetchProductLists();
     renderLocationList();
     showScreen('locations');
   } catch (e) {
-    showToast('Could not fetch user info.', true);
+    clearSession();
+    showToast('Sign-in failed. Please try again.', true);
+    showScreen('login');
   } finally {
     hideLoader();
   }
 }
 
+// Silent token refresh — called on app start if session exists
+// Gets a fresh OAuth token without showing any UI
+function silentTokenRefresh(savedUser) {
+  if (typeof google === 'undefined') {
+    // Google script not loaded yet — wait and retry
+    setTimeout(() => silentTokenRefresh(savedUser), 500);
+    return;
+  }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.CLIENT_ID,
+    scope: CONFIG.SCOPES,
+    hint: savedUser.email,   // pre-select the saved account
+    callback: async (resp) => {
+      if (resp.error || !resp.access_token) {
+        // Silent refresh failed — ask user to sign in again
+        clearSession();
+        hideLoader();
+        showScreen('login');
+        return;
+      }
+      state.accessToken = resp.access_token;
+      state.user = savedUser;
+      renderUserBadge();
+      await fetchProductLists();
+      renderLocationList();
+      hideLoader();
+      showScreen('locations');
+    }
+  });
+  // prompt: '' means no UI shown — purely silent
+  client.requestAccessToken({ prompt: '' });
+}
+
 function handleLogout() {
   if (!confirm('Sign out?')) return;
+  clearSession();
+  if (typeof google !== 'undefined') {
+    google.accounts.oauth2.revoke(state.accessToken, () => {});
+  }
   state = { user: null, accessToken: null, location: null, action: null, fgProducts: [], pmProducts: [] };
   showScreen('login');
 }
@@ -671,7 +747,7 @@ async function fetchProductLists() {
 }
 
 async function fetchSheetValues(sheetId, tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}?key=${CONFIG.API_KEY}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
   return data.values || [];
@@ -1096,9 +1172,9 @@ function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
   return fgRows.map(r => [date, email, channel, credit, imageUrl, r.product, r.batch, r.returnedQty, r.usableQty]);
 }
 
-// ═══════════════════════════════════════════════════════
-// GOOGLE DRIVE UPLOAD
-// ═══════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// GOOGLE DRIVE UPLOAD  (with root-Drive fallback)
+// ════════════════════════════════════════════════════════
 async function uploadToDrive(file, fileName, folderId) {
   const safeName = fileName.replace(/[\/\\:*?"<>|]/g, '_');
   const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
@@ -1106,52 +1182,48 @@ async function uploadToDrive(file, fileName, folderId) {
   const mimeType = file.type || 'image/jpeg';
   const fileBytes = await file.arrayBuffer();
 
-  const doUpload = async (parents) => {
-    const metadata = { name: fullName };
-    if (parents.length) metadata.parents = parents;
+  const attempt = async (parentId) => {
+    const meta = { name: fullName };
+    if (parentId) meta.parents = [parentId];
     const form = new FormData();
-    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
     form.append('file', new Blob([fileBytes], { type: mimeType }));
-    const resp = await fetch(
+    const res = await fetch(
       'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',
       { method: 'POST', headers: { Authorization: 'Bearer ' + state.accessToken }, body: form }
     );
-    const json = await resp.json();
-    return { ok: resp.ok, status: resp.status, json };
+    const json = await res.json();
+    return { ok: res.ok, status: res.status, json };
   };
 
-  // Attempt 1: upload into specified folder
-  let result = await doUpload([folderId]);
+  // Try 1: upload into the specified folder
+  let r = await attempt(folderId);
 
-  // Attempt 2: if folder not found/accessible, fall back to root My Drive
-  if (!result.ok) {
-    const errMsg = result.json?.error?.message || '';
-    const errStatus = result.json?.error?.status || '';
-    if (errStatus === 'NOT_FOUND' || result.status === 404 || errMsg.toLowerCase().includes('not found')) {
-      showToast('Folder not accessible — saving to My Drive root instead', false);
-      result = await doUpload([]);  // no parents = root Drive
+  // Try 2: folder inaccessible → fall back to root My Drive
+  if (!r.ok) {
+    const errStatus = (r.json?.error?.status || '').toUpperCase();
+    const errMsg    = (r.json?.error?.message || '').toLowerCase();
+    if (r.status === 404 || errStatus === 'NOT_FOUND' || errMsg.includes('not found')) {
+      showToast('⚠️ Saving to My Drive (share the folder with your account for correct placement)', false);
+      r = await attempt(null);
     }
   }
 
-  // Still failing — throw with clear message
-  if (!result.ok) {
-    const msg = result.json?.error?.message || JSON.stringify(result.json);
-    if (result.status === 403) {
-      throw new Error('Drive permission denied. Sign out, sign back in, and approve ALL permissions including Google Drive.');
-    }
-    throw new Error('Drive upload failed (' + result.status + '): ' + msg);
+  if (!r.ok) {
+    const msg = r.json?.error?.message || JSON.stringify(r.json);
+    if (r.status === 401) throw new Error('Session expired — please sign out and sign back in.');
+    if (r.status === 403) throw new Error('Drive access denied — sign out, sign back in, approve all permissions.');
+    throw new Error('Drive upload failed (' + r.status + '): ' + msg);
   }
 
-  const fileId = result.json.id;
-
-  // Make the uploaded file viewable by anyone with the link
+  const fileId = r.json.id;
   await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + state.accessToken, 'Content-Type': 'application/json' },
     body: JSON.stringify({ role: 'reader', type: 'anyone' }),
   }).catch(() => {});
 
-  return result.json.webViewLink || 'https://drive.google.com/file/d/' + fileId + '/view';
+  return r.json.webViewLink || 'https://drive.google.com/file/d/' + fileId + '/view';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1221,6 +1293,22 @@ function showSuccess(msg) {
   document.getElementById('success-msg').textContent = msg;
   showScreen('success');
 }
+
+// ═══════════════════════════════════════════════════════
+// APP STARTUP — check for saved session first
+// ═══════════════════════════════════════════════════════
+(function initApp() {
+  const savedUser = loadSession();
+  if (savedUser) {
+    // Session found — show loader and silently refresh OAuth token
+    showLoader('Resuming session…');
+    // Delay slightly to let Google GIS script load
+    setTimeout(() => silentTokenRefresh(savedUser), 800);
+  } else {
+    // No session — show login screen
+    showScreen('login');
+  }
+})();
 </script>
 </body>
 </html>
