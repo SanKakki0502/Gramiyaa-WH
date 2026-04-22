@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Gramiyaa_WH v7 — redirect OAuth, 30-day session, gallery picker, qty validation -->
+<!-- Gramiyaa_WH v8 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -533,6 +533,7 @@
 // ═══════════════════════════════════════════════════════
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
+  API_KEY: 'AIzaSyCOPfNFLSnMyUHcACVO496Pu2qn6wA-gow',
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
@@ -629,35 +630,27 @@ function clearSession() {
 }
 
 // ═══════════════════════════════════════════════════════
-// GOOGLE SIGN-IN
-// Uses OAuth2 implicit flow via redirect — works on ALL
-// mobile browsers without popup-blocking issues.
+// GOOGLE SIGN-IN — redirect flow (works on all mobile browsers)
 // ═══════════════════════════════════════════════════════
 function signInWithGoogle() {
-  // Build the Google OAuth URL manually — this does a full page
-  // redirect (no popup) so it is never blocked on mobile.
   const params = new URLSearchParams({
-    client_id:     CONFIG.CLIENT_ID,
-    redirect_uri:  window.location.origin + window.location.pathname,
-    response_type: 'token',
-    scope:         CONFIG.SCOPES,
+    client_id:              CONFIG.CLIENT_ID,
+    redirect_uri:           window.location.origin + window.location.pathname,
+    response_type:          'token',
+    scope:                  CONFIG.SCOPES,
     include_granted_scopes: 'true',
-    state: 'signin',
+    state:                  'signin',
   });
   window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
 }
 
-// Called on page load — check if we are returning from OAuth redirect
 function handleOAuthRedirect() {
-  // Google puts the token in the URL hash after redirect
   const hash = window.location.hash.substring(1);
-  if (!hash) return false;
+  if (!hash) return null;
   const params = new URLSearchParams(hash);
   const token  = params.get('access_token');
-  const state  = params.get('state');
-  if (!token || state !== 'signin') return false;
-
-  // Clean the hash from the URL so it doesn't show/reprocess
+  const st     = params.get('state');
+  if (!token || st !== 'signin') return null;
   history.replaceState(null, '', window.location.pathname);
   return token;
 }
@@ -678,7 +671,6 @@ async function fetchUserInfo(token) {
     renderLocationList();
     showScreen('locations');
   } catch (e) {
-    console.error('fetchUserInfo error:', e);
     clearSession();
     showToast('Sign-in failed: ' + e.message, true);
     showScreen('login');
@@ -687,44 +679,29 @@ async function fetchUserInfo(token) {
   }
 }
 
-// Silent token refresh using a hidden iframe (no redirect, no popup)
-// Used when session exists but we need a fresh token
+// Silent token refresh via hidden iframe — used for 30-day session resume
 function silentTokenRefresh(savedUser) {
   return new Promise((resolve) => {
     const params = new URLSearchParams({
-      client_id:     CONFIG.CLIENT_ID,
-      redirect_uri:  window.location.origin + window.location.pathname,
-      response_type: 'token',
-      scope:         CONFIG.SCOPES,
-      prompt:        'none',        // silent — fails if user needs to consent
-      login_hint:    savedUser.email,
-      state:         'silent',
+      client_id:    CONFIG.CLIENT_ID,
+      redirect_uri: window.location.origin + window.location.pathname,
+      response_type:'token',
+      scope:        CONFIG.SCOPES,
+      prompt:       'none',
+      login_hint:   savedUser.email,
+      state:        'silent',
     });
-
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'display:none;width:0;height:0;position:absolute';
     iframe.src = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
-
     let done = false;
-    const finish = (token) => {
-      if (done) return; done = true;
-      document.body.removeChild(iframe);
-      resolve(token);
-    };
-
+    const finish = (t) => { if (done) return; done = true; document.body.removeChild(iframe); resolve(t); };
     iframe.onload = () => {
       try {
-        const hash = new URLSearchParams(iframe.contentWindow.location.hash.substring(1));
-        const token = hash.get('access_token');
-        finish(token || null);
-      } catch(e) {
-        // cross-origin after auth — means redirect happened to our page with token
-        // The token will be caught by handleOAuthRedirect on that page load
-        finish(null);
-      }
+        const h = new URLSearchParams(iframe.contentWindow.location.hash.substring(1));
+        finish(h.get('access_token') || null);
+      } catch(e) { finish(null); }
     };
-
-    // Timeout after 8s — fall through to sign-in screen
     setTimeout(() => finish(null), 8000);
     document.body.appendChild(iframe);
   });
@@ -763,7 +740,7 @@ async function fetchProductLists() {
 }
 
 async function fetchSheetValues(sheetId, tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}?key=${CONFIG.API_KEY}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
   return data.values || [];
@@ -1223,14 +1200,12 @@ async function uploadToDrive(file, fileName, folderId) {
       r = await attempt(null);
     }
   }
-
   if (!r.ok) {
     const msg = r.json?.error?.message || JSON.stringify(r.json);
     if (r.status === 401) throw new Error('Session expired — please sign out and sign back in.');
     if (r.status === 403) throw new Error('Drive access denied — sign out and sign back in.');
     throw new Error('Drive upload failed (' + r.status + '): ' + msg);
   }
-
   const fileId = r.json.id;
   await fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '/permissions', {
     method: 'POST',
@@ -1321,11 +1296,12 @@ function validateUsable(refId, usableId) {
 }
 function validateAllUsable(prefix, refSuffix, usableSuffix) {
   let valid = true;
-  document.querySelectorAll('[id^="' + prefix + '"][id*="' + usableSuffix + '"]').forEach(useEl => {
-    const idx = useEl.id.match(/(\d+)$/)?.[1];
+  document.querySelectorAll('[id^="' + prefix + '"]').forEach(el => {
+    if (!el.id.includes(usableSuffix)) return;
+    const idx = el.id.match(/(\d+)$/)?.[1];
     if (idx !== undefined) {
       const refEl = document.getElementById(prefix + refSuffix + idx);
-      if (refEl && !validateUsable(refEl.id, useEl.id)) valid = false;
+      if (refEl && !validateUsable(refEl.id, el.id)) valid = false;
     }
   });
   return valid;
@@ -1343,18 +1319,16 @@ function showSuccess(msg) {
 // APP STARTUP
 // ═══════════════════════════════════════════════════════
 (async function initApp() {
-  // Step 1: Check if we just returned from Google OAuth redirect
+  // Check if returning from Google OAuth redirect
   const redirectToken = handleOAuthRedirect();
   if (redirectToken) {
     await fetchUserInfo(redirectToken);
     return;
   }
-
-  // Step 2: Check for saved 30-day session
+  // Check for saved 30-day session
   const savedUser = loadSession();
   if (savedUser) {
     showLoader('Resuming session…');
-    // Try silent iframe token refresh
     const freshToken = await silentTokenRefresh(savedUser);
     if (freshToken) {
       state.user        = savedUser;
@@ -1365,15 +1339,13 @@ function showSuccess(msg) {
       hideLoader();
       showScreen('locations');
     } else {
-      // Silent refresh failed — need user to sign in again
       hideLoader();
       clearSession();
       showScreen('login');
     }
     return;
   }
-
-  // Step 3: No session — show login
+  // No session — show login
   showScreen('login');
 })();
 </script>
