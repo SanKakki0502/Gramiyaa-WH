@@ -531,9 +531,10 @@
 // ═══════════════════════════════════════════════════════
 // CONFIG — Replace with your own values
 // ═══════════════════════════════════════════════════════
+const key = process.env.API_WH;
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
-  API_KEY: process.env.API_WH,
+  API_KEY: key,
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
@@ -546,6 +547,7 @@ const CONFIG = {
   DRIVE_OUTBOUND_FOLDER: '1IjrE5JZp2KJLqZFkuPTe_y2CBEwRsoaN',
   DRIVE_RETURNS_FOLDER: '1UULjIV_SBCrpILPYeNvLHJhdFc56kkXm',
 };
+console.log(key);
 
 // ═══════════════════════════════════════════════════════
 // STATE
