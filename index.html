@@ -436,49 +436,29 @@
     .qty-error.visible { display: block; }
     .qty-invalid { border-color: #ff6b6b !important; background: rgba(255,107,107,0.08) !important; }
 
-    /* ── IMAGE PICKER BOTTOM SHEET ── */
-    #picker-sheet { display:none; position:fixed; inset:0; z-index:10000; }
-    #picker-sheet.show { display:block; }
-    .picker-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.55); }
-    .picker-panel {
-      position:absolute; bottom:0; left:0; right:0;
-      background:#1a3d2b; border-radius:22px 22px 0 0;
-      padding:12px 20px 40px; animation:slideUp .22s ease;
-    }
-    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-    .picker-handle { width:40px; height:4px; background:rgba(255,255,255,0.2); border-radius:4px; margin:0 auto 18px; }
-    .picker-title { font-family:'Raleway',sans-serif; font-weight:700; font-size:0.9rem; color:var(--gold-light); margin-bottom:16px; text-align:center; }
-    .picker-btn {
-      width:100%; background:rgba(255,255,255,0.07);
-      border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-      color:var(--white); padding:16px 20px; font-size:1rem;
-      font-family:'Source Sans 3',sans-serif; text-align:left;
-      display:flex; align-items:center; gap:14px;
-      cursor:pointer; margin-bottom:10px; transition:background .15s;
-    }
-    .picker-btn:active { background:rgba(201,168,76,0.18); }
-    .picker-btn-icon { font-size:1.5rem; }
-    .picker-cancel {
-      width:100%; background:transparent;
-      border:1px solid rgba(255,255,255,0.15); border-radius:14px;
-      color:rgba(255,255,255,0.5); padding:14px; font-size:0.95rem; cursor:pointer; margin-top:6px;
-    }
-    .file-trigger {
-      display:flex; align-items:center; gap:10px;
-      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18);
-      border-radius:10px; padding:12px 14px; cursor:pointer; transition:border-color .2s;
-    }
-    .file-trigger:active { background:rgba(201,168,76,0.1); }
-    .file-trigger-icon { font-size:1.3rem; }
-    .file-trigger-label { flex:1; font-size:0.92rem; color:rgba(255,255,255,0.6); }
-    .file-trigger.chosen .file-trigger-label { color:#7dffb3; }
-    .file-trigger.chosen { border-color:rgba(125,255,179,0.35); }
-    .file-trigger-arrow { opacity:0.35; font-size:0.9rem; }
-
+    /* picker */
+    #picker-sheet{display:none;position:fixed;inset:0;z-index:10000}
+    #picker-sheet.show{display:block}
+    .picker-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.55)}
+    .picker-panel{position:absolute;bottom:0;left:0;right:0;background:#1a3d2b;border-radius:22px 22px 0 0;padding:12px 20px 40px;animation:slideUp .22s ease}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .picker-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:4px;margin:0 auto 18px}
+    .picker-title{font-family:'Raleway',sans-serif;font-weight:700;font-size:.9rem;color:var(--gold-light);margin-bottom:16px;text-align:center}
+    .picker-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:var(--white);padding:16px 20px;font-size:1rem;font-family:'Source Sans 3',sans-serif;text-align:left;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:10px;transition:background .15s}
+    .picker-btn:active{background:rgba(201,168,76,.18)}
+    .picker-btn-icon{font-size:1.5rem}
+    .picker-cancel{width:100%;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:14px;color:rgba(255,255,255,.5);padding:14px;font-size:.95rem;cursor:pointer;margin-top:6px}
+    .file-trigger{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s}
+    .file-trigger:active{background:rgba(201,168,76,.1)}
+    .file-trigger-icon{font-size:1.3rem}
+    .file-trigger-label{flex:1;font-size:.92rem;color:rgba(255,255,255,.6)}
+    .file-trigger.chosen .file-trigger-label{color:#7dffb3}
+    .file-trigger.chosen{border-color:rgba(125,255,179,.35)}
+    .file-trigger-arrow{opacity:.35;font-size:.9rem}
     /* scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 4px; }
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.3);border-radius:4px}
   </style>
 </head>
 <body>
@@ -563,26 +543,19 @@
   </div>
 </div>
 
-<!-- IMAGE PICKER SHEET -->
+<!-- PICKER -->
 <div id="picker-sheet">
   <div class="picker-backdrop" onclick="closePicker()"></div>
   <div class="picker-panel">
     <div class="picker-handle"></div>
     <div class="picker-title">Select Image</div>
-    <button class="picker-btn" onclick="pickerChoose('camera')">
-      <span class="picker-btn-icon">📷</span>
-      <div><div style="font-weight:600">Take Photo</div><div style="font-size:0.78rem;opacity:0.55;margin-top:2px">Open camera</div></div>
-    </button>
-    <button class="picker-btn" onclick="pickerChoose('gallery')">
-      <span class="picker-btn-icon">🖼️</span>
-      <div><div style="font-weight:600">Choose from Gallery</div><div style="font-size:0.78rem;opacity:0.55;margin-top:2px">Browse your photos</div></div>
-    </button>
+    <button class="picker-btn" onclick="pickerChoose('camera')"><span class="picker-btn-icon">📷</span><div><div style="font-weight:600">Take Photo</div><div style="font-size:.78rem;opacity:.55;margin-top:2px">Open camera</div></div></button>
+    <button class="picker-btn" onclick="pickerChoose('gallery')"><span class="picker-btn-icon">🖼️</span><div><div style="font-weight:600">Choose from Gallery</div><div style="font-size:.78rem;opacity:.55;margin-top:2px">Browse your photos</div></div></button>
     <button class="picker-cancel" onclick="closePicker()">Cancel</button>
   </div>
 </div>
-<input type="file" id="__camera-input"  accept="image/*" capture="environment" style="display:none" />
-<input type="file" id="__gallery-input" accept="image/*" style="display:none" />
-
+<input type="file" id="__camera-input"  accept="image/*" capture="environment" style="display:none"/>
+<input type="file" id="__gallery-input" accept="image/*" style="display:none"/>
 <!-- Google API scripts -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -663,10 +636,8 @@ function todayStr() {
 }
 
 function goBack(to) {
-  if (to === 'locations') {
-    Object.keys(FILE_CACHE).forEach(k => delete FILE_CACHE[k]);
-    showScreen('locations');
-  } else if (to === 'actions') showScreen('actions');
+  if (to === 'locations') { Object.keys(FILE_CACHE).forEach(k=>delete FILE_CACHE[k]); showScreen('locations'); }
+  else if (to === 'actions') showScreen('actions');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -796,24 +767,17 @@ async function fetchProductLists() {
     ]);
     state.fgProducts = (fg || []).flat().filter(Boolean);
     state.pmProducts = (pm || []).flat().filter(Boolean);
-    if (!state.fgProducts.length && !state.pmProducts.length) {
-      showToast('⚠ Products not loaded — check Sheet tab names match exactly', true);
-    }
   } catch (e) {
     console.warn('Could not load product lists:', e);
-    showToast('⚠ Could not load product lists from Google Sheets', true);
+    showToast('Could not load product list. Check console for details.', true);
   }
 }
 
 async function fetchSheetValues(sheetId, tabName) {
-  // OAuth Bearer token is sufficient — no API key needed
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
-  if (!r.ok) {
-    console.warn('Sheet fetch error:', data?.error?.message, '| tab:', tabName);
-    return [];
-  }
+  if (!r.ok) { console.error('Sheet error', tabName, data?.error?.message); return []; }
   return data.values || [];
 }
 
@@ -1057,18 +1021,14 @@ function fieldNumber(id, label, req = false) {
     <input type="number" id="${id}" min="0" ${req?'required':''} /></div>`;
 }
 const FILE_CACHE = {};
-
 function fieldFile(id, label, req = false) {
-  return `<div class="field">
-    <label>${label}${req?'<span class="req"> *</span>':''}</label>
+  return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
     <div class="file-trigger" id="${id}-trigger" onclick="openPicker('${id}')">
       <span class="file-trigger-icon">📎</span>
       <span class="file-trigger-label" id="${id}-label">Tap to attach image</span>
       <span class="file-trigger-arrow">›</span>
-    </div>
-  </div>`;
+    </div></div>`;
 }
-
 function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
 function getFile(id) { return FILE_CACHE[id] || null; }
 
@@ -1249,15 +1209,14 @@ function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
 // GOOGLE DRIVE UPLOAD  (with root-Drive fallback)
 // ════════════════════════════════════════════════════════
 async function uploadToDrive(file, fileName, folderId) {
-  // file = {dataUrl, name, type} from FILE_CACHE
   const safeName = fileName.replace(/[\/\\:*?"<>|]/g, '_');
-  const ext      = (file.name || 'img').includes('.') ? (file.name || 'img').split('.').pop() : 'jpg';
+  const ext      = (file.name||'img').includes('.') ? (file.name||'img').split('.').pop() : 'jpg';
   const fullName = safeName + '.' + ext;
   const mimeType = file.type || 'image/jpeg';
   const base64   = file.dataUrl.split(',')[1];
   const binary   = atob(base64);
   const bytes    = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  for (let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
   const fileBytes = bytes.buffer;
 
   const attempt = async (parentId) => {
@@ -1402,36 +1361,27 @@ function showSuccess(msg) {
 // IMAGE PICKER
 // ═══════════════════════════════════════════════════════
 let _activeFileId = null;
-
-function openPicker(fileFieldId) {
-  _activeFileId = fileFieldId;
-  document.getElementById('picker-sheet').classList.add('show');
-}
-function closePicker() {
-  document.getElementById('picker-sheet').classList.remove('show');
-}
+function openPicker(id) { _activeFileId = id; document.getElementById('picker-sheet').classList.add('show'); }
+function closePicker() { document.getElementById('picker-sheet').classList.remove('show'); }
 function pickerChoose(source) {
   closePicker();
   const inputId = source === 'camera' ? '__camera-input' : '__gallery-input';
   const old = document.getElementById(inputId);
-  const input = old.cloneNode(true);
-  old.parentNode.replaceChild(input, old);
-  input.onchange = () => {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
+  const inp = old.cloneNode(true); old.parentNode.replaceChild(inp, old);
+  inp.onchange = () => {
+    const file = inp.files[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = e => {
       FILE_CACHE[_activeFileId] = { dataUrl: e.target.result, name: file.name, type: file.type || 'image/jpeg' };
-      const label   = document.getElementById(_activeFileId + '-label');
-      const trigger = document.getElementById(_activeFileId + '-trigger');
-      if (label)   label.textContent = '✅ ' + file.name;
-      if (trigger) trigger.classList.add('chosen');
+      const lbl = document.getElementById(_activeFileId + '-label');
+      const trg = document.getElementById(_activeFileId + '-trigger');
+      if (lbl) lbl.textContent = '✅ ' + file.name;
+      if (trg) trg.classList.add('chosen');
     };
-    reader.onerror = () => showToast('Could not read file. Please try again.', true);
-    reader.readAsDataURL(file);
-    input.value = '';
+    r.onerror = () => showToast('Could not read file. Try again.', true);
+    r.readAsDataURL(file); inp.value = '';
   };
-  input.click();
+  inp.click();
 }
 
 // ═══════════════════════════════════════════════════════
