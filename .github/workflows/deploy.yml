@@ -1,0 +1,49 @@
+name: Build & Deploy Gramiyaa_WH
+
+on:
+  push:
+    branches:
+      - main          # runs every time you push to main
+  workflow_dispatch:  # also lets you trigger manually from GitHub UI
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # 1. Check out your repo
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Inject the API key secret into index.html
+      #    Replaces the __API_KEY__ placeholder with the real value
+      #    stored in your GitHub repository secret
+      - name: Inject API Key
+        run: |
+          sed -i "s|__API_KEY__|${{ secrets.API_WH }}|g" index.html
+
+      # 3. Upload the built site as a Pages artifact
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'   # uploads entire repo root (index.html + manifest.json)
+
+      # 4. Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
