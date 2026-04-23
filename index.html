@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Gramiyaa_WH v10 — OAuth-only Sheets, no API key -->
+<!-- Gramiyaa_WH v11 — mobile file cache fix -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -534,7 +534,7 @@
 
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
-  // API_KEY removed — Sheets API uses the OAuth Bearer token instead (no key needed)
+  API_KEY: 'process.env.API_WH',
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
@@ -605,7 +605,11 @@ function todayStr() {
 }
 
 function goBack(to) {
-  if (to === 'locations') showScreen('locations');
+  if (to === 'locations') {
+    // Clear file cache when starting a new entry
+    Object.keys(FILE_CACHE).forEach(k => delete FILE_CACHE[k]);
+    showScreen('locations');
+  }
   else if (to === 'actions') showScreen('actions');
 }
 
@@ -736,24 +740,15 @@ async function fetchProductLists() {
     ]);
     state.fgProducts = (fg || []).flat().filter(Boolean);
     state.pmProducts = (pm || []).flat().filter(Boolean);
-    if (!state.fgProducts.length && !state.pmProducts.length) {
-      showToast('⚠ Products list empty — check Sheet tab names are "Products" and "Packing material"', true);
-    }
   } catch (e) {
     console.warn('Could not load product lists:', e);
-    showToast('⚠ Could not load product list from Google Sheets', true);
   }
 }
 
 async function fetchSheetValues(sheetId, tabName) {
-  // Uses OAuth Bearer token — no API key needed
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}?key=${CONFIG.API_KEY}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
-  if (!r.ok) {
-    console.warn('Sheet fetch failed:', data?.error?.message, 'tab:', tabName);
-    return [];
-  }
   return data.values || [];
 }
 
@@ -996,14 +991,48 @@ function fieldNumber(id, label, req = false) {
   return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
     <input type="number" id="${id}" min="0" ${req?'required':''} /></div>`;
 }
+// ── File cache: reads file into memory immediately on selection ──
+// Prevents "file could not be read" errors on mobile where the OS
+// revokes the file reference after any async gap.
+const FILE_CACHE = {};
+
 function fieldFile(id, label, req = false) {
   return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
-    <input type="file" id="${id}" accept="image/*" ${req?'required':''} />
-    <div class="file-hint">Tap to take photo or pick from gallery</div></div>`;
+    <input type="file" id="${id}" accept="image/*" ${req?'required':''} onchange="cacheFile(this)" />
+    <div class="file-hint" id="${id}-hint">Tap to take photo or pick from gallery</div></div>`;
+}
+
+// Called the instant a file is selected — reads it into memory right away
+function cacheFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    FILE_CACHE[input.id] = {
+      dataUrl:  e.target.result,
+      name:     file.name,
+      type:     file.type || 'image/jpeg',
+    };
+    // Show filename confirmation to user
+    const hint = document.getElementById(input.id + '-hint');
+    if (hint) {
+      hint.textContent = '✅ ' + file.name;
+      hint.style.color = '#7dffb3';
+    }
+  };
+  reader.onerror = () => {
+    showToast('Could not read file. Please try selecting it again.', true);
+    FILE_CACHE[input.id] = null;
+  };
+  reader.readAsDataURL(file);
 }
 
 function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
-function getFile(id) { const el = document.getElementById(id); return el && el.files[0] ? el.files[0] : null; }
+
+// Returns cached file data (already in memory, never revoked)
+function getFile(id) {
+  return FILE_CACHE[id] || null;
+}
 
 // ═══════════════════════════════════════════════════════
 // COLLECT PRODUCT ROWS
@@ -1182,11 +1211,18 @@ function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
 // GOOGLE DRIVE UPLOAD  (with root-Drive fallback)
 // ════════════════════════════════════════════════════════
 async function uploadToDrive(file, fileName, folderId) {
+  // file is now a cached object {dataUrl, name, type} — already in memory
   const safeName = fileName.replace(/[\/\\:*?"<>|]/g, '_');
   const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
   const fullName = safeName + '.' + ext;
   const mimeType = file.type || 'image/jpeg';
-  const fileBytes = await file.arrayBuffer();
+
+  // Convert base64 dataUrl → binary bytes
+  const base64 = file.dataUrl.split(',')[1];
+  const binaryStr = atob(base64);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+  const fileBytes = bytes.buffer;
 
   const attempt = async (parentId) => {
     const meta = { name: fullName };
