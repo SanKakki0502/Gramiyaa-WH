@@ -1,4 +1,3 @@
-<!-- Gramiyaa_WH v13 — custom camera+gallery picker -->
 <!DOCTYPE html>
 <!-- Gramiyaa_WH v8 -->
 <html lang="en">
@@ -438,75 +437,43 @@
     .qty-invalid { border-color: #ff6b6b !important; background: rgba(255,107,107,0.08) !important; }
 
     /* ── IMAGE PICKER BOTTOM SHEET ── */
-    #picker-sheet {
-      display: none;
-      position: fixed; inset: 0; z-index: 10000;
-    }
-    #picker-sheet.show { display: block; }
-    .picker-backdrop {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.55);
-    }
+    #picker-sheet { display:none; position:fixed; inset:0; z-index:10000; }
+    #picker-sheet.show { display:block; }
+    .picker-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.55); }
     .picker-panel {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      background: #1a3d2b;
-      border-radius: 22px 22px 0 0;
-      padding: 12px 20px 40px;
-      animation: slideUp .22s ease;
+      position:absolute; bottom:0; left:0; right:0;
+      background:#1a3d2b; border-radius:22px 22px 0 0;
+      padding:12px 20px 40px; animation:slideUp .22s ease;
     }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .picker-handle {
-      width: 40px; height: 4px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 4px;
-      margin: 0 auto 18px;
-    }
-    .picker-title {
-      font-family: 'Raleway', sans-serif;
-      font-weight: 700; font-size: 0.9rem;
-      color: var(--gold-light);
-      margin-bottom: 16px; text-align: center;
-    }
+    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .picker-handle { width:40px; height:4px; background:rgba(255,255,255,0.2); border-radius:4px; margin:0 auto 18px; }
+    .picker-title { font-family:'Raleway',sans-serif; font-weight:700; font-size:0.9rem; color:var(--gold-light); margin-bottom:16px; text-align:center; }
     .picker-btn {
-      width: 100%;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      color: var(--white);
-      padding: 16px 20px;
-      font-size: 1rem;
-      font-family: 'Source Sans 3', sans-serif;
-      text-align: left;
-      display: flex; align-items: center; gap: 14px;
-      cursor: pointer; margin-bottom: 10px;
-      transition: background .15s;
+      width:100%; background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.12); border-radius:14px;
+      color:var(--white); padding:16px 20px; font-size:1rem;
+      font-family:'Source Sans 3',sans-serif; text-align:left;
+      display:flex; align-items:center; gap:14px;
+      cursor:pointer; margin-bottom:10px; transition:background .15s;
     }
-    .picker-btn:active { background: rgba(201,168,76,0.18); }
-    .picker-btn-icon { font-size: 1.5rem; }
+    .picker-btn:active { background:rgba(201,168,76,0.18); }
+    .picker-btn-icon { font-size:1.5rem; }
     .picker-cancel {
-      width: 100%; background: transparent;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 14px; color: rgba(255,255,255,0.5);
-      padding: 14px; font-size: 0.95rem; cursor: pointer; margin-top: 6px;
+      width:100%; background:transparent;
+      border:1px solid rgba(255,255,255,0.15); border-radius:14px;
+      color:rgba(255,255,255,0.5); padding:14px; font-size:0.95rem; cursor:pointer; margin-top:6px;
     }
-
-    /* ── FILE CHOSEN STATE ── */
     .file-trigger {
-      display: flex; align-items: center; gap: 10px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 10px; padding: 12px 14px; cursor: pointer;
-      transition: border-color .2s;
+      display:flex; align-items:center; gap:10px;
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18);
+      border-radius:10px; padding:12px 14px; cursor:pointer; transition:border-color .2s;
     }
-    .file-trigger:active { background: rgba(201,168,76,0.1); }
-    .file-trigger-icon { font-size: 1.3rem; }
-    .file-trigger-label {
-      flex: 1; font-size: 0.92rem;
-      color: rgba(255,255,255,0.6);
-    }
-    .file-trigger.chosen .file-trigger-label { color: #7dffb3; }
-    .file-trigger.chosen { border-color: rgba(125,255,179,0.35); }
-    .file-trigger-arrow { opacity: 0.35; font-size: 0.9rem; }
+    .file-trigger:active { background:rgba(201,168,76,0.1); }
+    .file-trigger-icon { font-size:1.3rem; }
+    .file-trigger-label { flex:1; font-size:0.92rem; color:rgba(255,255,255,0.6); }
+    .file-trigger.chosen .file-trigger-label { color:#7dffb3; }
+    .file-trigger.chosen { border-color:rgba(125,255,179,0.35); }
+    .file-trigger-arrow { opacity:0.35; font-size:0.9rem; }
 
     /* scrollbar */
     ::-webkit-scrollbar { width: 4px; }
@@ -596,7 +563,7 @@
   </div>
 </div>
 
-<!-- ── IMAGE PICKER BOTTOM SHEET ── -->
+<!-- IMAGE PICKER SHEET -->
 <div id="picker-sheet">
   <div class="picker-backdrop" onclick="closePicker()"></div>
   <div class="picker-panel">
@@ -604,22 +571,15 @@
     <div class="picker-title">Select Image</div>
     <button class="picker-btn" onclick="pickerChoose('camera')">
       <span class="picker-btn-icon">📷</span>
-      <div>
-        <div style="font-weight:600">Take Photo</div>
-        <div style="font-size:0.78rem;opacity:0.55;margin-top:2px">Open camera</div>
-      </div>
+      <div><div style="font-weight:600">Take Photo</div><div style="font-size:0.78rem;opacity:0.55;margin-top:2px">Open camera</div></div>
     </button>
     <button class="picker-btn" onclick="pickerChoose('gallery')">
       <span class="picker-btn-icon">🖼️</span>
-      <div>
-        <div style="font-weight:600">Choose from Gallery</div>
-        <div style="font-size:0.78rem;opacity:0.55;margin-top:2px">Browse your photos</div>
-      </div>
+      <div><div style="font-weight:600">Choose from Gallery</div><div style="font-size:0.78rem;opacity:0.55;margin-top:2px">Browse your photos</div></div>
     </button>
     <button class="picker-cancel" onclick="closePicker()">Cancel</button>
   </div>
 </div>
-<!-- Hidden inputs: one forces camera, one opens gallery -->
 <input type="file" id="__camera-input"  accept="image/*" capture="environment" style="display:none" />
 <input type="file" id="__gallery-input" accept="image/*" style="display:none" />
 
@@ -633,7 +593,6 @@
 
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
-  API_KEY: process.env.API_WH,
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
@@ -837,15 +796,24 @@ async function fetchProductLists() {
     ]);
     state.fgProducts = (fg || []).flat().filter(Boolean);
     state.pmProducts = (pm || []).flat().filter(Boolean);
+    if (!state.fgProducts.length && !state.pmProducts.length) {
+      showToast('⚠ Products not loaded — check Sheet tab names match exactly', true);
+    }
   } catch (e) {
     console.warn('Could not load product lists:', e);
+    showToast('⚠ Could not load product lists from Google Sheets', true);
   }
 }
 
 async function fetchSheetValues(sheetId, tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}?key=${CONFIG.API_KEY}`;
+  // OAuth Bearer token is sufficient — no API key needed
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
+  if (!r.ok) {
+    console.warn('Sheet fetch error:', data?.error?.message, '| tab:', tabName);
+    return [];
+  }
   return data.values || [];
 }
 
@@ -1088,7 +1056,6 @@ function fieldNumber(id, label, req = false) {
   return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
     <input type="number" id="${id}" min="0" ${req?'required':''} /></div>`;
 }
-// FILE_CACHE stores {dataUrl, name, type} immediately on selection
 const FILE_CACHE = {};
 
 function fieldFile(id, label, req = false) {
@@ -1282,15 +1249,14 @@ function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
 // GOOGLE DRIVE UPLOAD  (with root-Drive fallback)
 // ════════════════════════════════════════════════════════
 async function uploadToDrive(file, fileName, folderId) {
-  // file = {dataUrl, name, type} from FILE_CACHE — already in memory, never revoked
-  const safeName  = fileName.replace(/[\/\\:*?"<>|]/g, '_');
-  const ext       = (file.name || 'img').includes('.') ? (file.name || 'img').split('.').pop() : 'jpg';
-  const fullName  = safeName + '.' + ext;
-  const mimeType  = file.type || 'image/jpeg';
-  // Convert base64 dataUrl → ArrayBuffer
-  const base64    = file.dataUrl.split(',')[1];
-  const binary    = atob(base64);
-  const bytes     = new Uint8Array(binary.length);
+  // file = {dataUrl, name, type} from FILE_CACHE
+  const safeName = fileName.replace(/[\/\\:*?"<>|]/g, '_');
+  const ext      = (file.name || 'img').includes('.') ? (file.name || 'img').split('.').pop() : 'jpg';
+  const fullName = safeName + '.' + ext;
+  const mimeType = file.type || 'image/jpeg';
+  const base64   = file.dataUrl.split(',')[1];
+  const binary   = atob(base64);
+  const bytes    = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   const fileBytes = bytes.buffer;
 
@@ -1433,48 +1399,38 @@ function showSuccess(msg) {
 }
 
 // ═══════════════════════════════════════════════════════
-// IMAGE PICKER — bottom sheet with Camera / Gallery
+// IMAGE PICKER
 // ═══════════════════════════════════════════════════════
-let _activeFileId = null;   // the fieldFile id currently waiting
+let _activeFileId = null;
 
 function openPicker(fileFieldId) {
   _activeFileId = fileFieldId;
   document.getElementById('picker-sheet').classList.add('show');
 }
-
 function closePicker() {
   document.getElementById('picker-sheet').classList.remove('show');
 }
-
 function pickerChoose(source) {
   closePicker();
   const inputId = source === 'camera' ? '__camera-input' : '__gallery-input';
   const old = document.getElementById(inputId);
-  // Clone to reset value so same file can be re-selected
   const input = old.cloneNode(true);
   old.parentNode.replaceChild(input, old);
-
   input.onchange = () => {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      FILE_CACHE[_activeFileId] = {
-        dataUrl: e.target.result,
-        name:    file.name,
-        type:    file.type || 'image/jpeg',
-      };
-      // Update the trigger UI to show chosen state
-      const trigger = document.getElementById(_activeFileId + '-trigger');
+      FILE_CACHE[_activeFileId] = { dataUrl: e.target.result, name: file.name, type: file.type || 'image/jpeg' };
       const label   = document.getElementById(_activeFileId + '-label');
-      if (label)   label.textContent  = '✅ ' + file.name;
+      const trigger = document.getElementById(_activeFileId + '-trigger');
+      if (label)   label.textContent = '✅ ' + file.name;
       if (trigger) trigger.classList.add('chosen');
     };
     reader.onerror = () => showToast('Could not read file. Please try again.', true);
     reader.readAsDataURL(file);
-    input.value = '';  // reset for re-selection
+    input.value = '';
   };
-
   input.click();
 }
 
