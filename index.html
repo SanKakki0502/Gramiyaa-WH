@@ -436,7 +436,77 @@
     .qty-error.visible { display: block; }
     .qty-invalid { border-color: #ff6b6b !important; background: rgba(255,107,107,0.08) !important; }
 
-    /* picker */
+    /* ── REVIEW SCREEN ── */
+    .review-section {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .review-section-title {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 700; font-size: 0.82rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 12px;
+    }
+    .review-row:last-child { border-bottom: none; }
+    .review-label {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      flex-shrink: 0;
+    }
+    .review-value {
+      font-size: 0.88rem;
+      color: var(--white);
+      text-align: right;
+      word-break: break-word;
+    }
+    .review-value.highlight { color: var(--gold-light); font-weight: 600; }
+    .review-product-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .review-product-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .review-product-details {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .review-product-tag {
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 3px 8px;
+      color: rgba(255,255,255,0.65);
+    }
+    .review-image-thumb {
+      width: 64px; height: 64px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .review-image-wrap {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .review-image-name { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+
+    /* ── IMAGE PICKER BOTTOM SHEET ── */
     #picker-sheet{display:none;position:fixed;inset:0;z-index:10000}
     #picker-sheet.show{display:block}
     .picker-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.55)}
@@ -455,10 +525,11 @@
     .file-trigger.chosen .file-trigger-label{color:#7dffb3}
     .file-trigger.chosen{border-color:rgba(125,255,179,.35)}
     .file-trigger-arrow{opacity:.35;font-size:.9rem}
+
     /* scrollbar */
-    ::-webkit-scrollbar{width:4px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.3);border-radius:4px}
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -529,6 +600,18 @@
       <button class="back-btn" onclick="goBack('actions')">← Back</button>
       <div class="breadcrumb" id="form-breadcrumb"></div>
       <div id="form-container"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: REVIEW -->
+  <div id="screen-review" class="screen">
+    <div class="screen-body">
+      <button class="back-btn" onclick="showScreen('form')">← Edit</button>
+      <div class="screen-title">Review Entry</div>
+      <div class="screen-subtitle">Please confirm before submitting</div>
+      <div id="review-body"></div>
+      <button class="submit-btn" id="review-confirm-btn" style="margin-top:8px">Confirm & Submit</button>
+      <div style="height:40px"></div>
     </div>
   </div>
 
@@ -769,7 +852,6 @@ async function fetchProductLists() {
     state.pmProducts = (pm || []).flat().filter(Boolean);
   } catch (e) {
     console.warn('Could not load product lists:', e);
-    showToast('Could not load product list. Check console for details.', true);
   }
 }
 
@@ -777,7 +859,6 @@ async function fetchSheetValues(sheetId, tabName) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
-  if (!r.ok) { console.error('Sheet error', tabName, data?.error?.message); return []; }
   return data.values || [];
 }
 
@@ -1074,35 +1155,40 @@ function collectRows(prefix, type) {
 // ═══════════════════════════════════════════════════════
 // SUBMIT INBOUND
 // ═══════════════════════════════════════════════════════
-async function submitInbound() {
-  const date = getVal('ib-date');
-  const tn = getVal('ib-tn');
+function submitInbound() {
+  const date  = getVal('ib-date');
+  const tn    = getVal('ib-tn');
   const boxes = getVal('ib-boxes');
   const image = getFile('ib-image');
 
   if (!tn || !boxes || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
   if (!validateAllUsable('ib-fg-','rqty-','uqty-') || !validateAllUsable('ib-pm-','rqty-','uqty-')) { showToast('⚠ Usable qty cannot exceed Received qty.', true); return; }
 
-  showLoader('Uploading image…');
-  try {
-    const fileName = `${state.location}_${tn}_${date}`;
-    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_INBOUND_FOLDER);
+  const fgRows = collectRows('ib-fg', 'inbound-fg');
+  const pmRows = collectRows('ib-pm', 'inbound-pm');
 
-    const fgRows = collectRows('ib-fg', 'inbound-fg');
-    const pmRows = collectRows('ib-pm', 'inbound-pm');
-
-    showLoader('Saving to spreadsheet…');
-    const sheetName = `${state.location}_Inbound`;
-    const rows = buildInboundRows(date, state.user.email, tn, boxes, driveUrl, fgRows, pmRows);
-    await appendToSheet(sheetName, rows);
-
-    showSuccess(`Inbound entry saved for ${state.location}`);
-  } catch (e) {
-    console.error(e);
-    showToast('Error: ' + e.message, true);
-  } finally {
-    hideLoader();
-  }
+  showReview({
+    type: 'Inbound', location: state.location,
+    fields: [
+      { label: 'Date',              value: date },
+      { label: 'Executive Email',   value: state.user.email },
+      { label: 'Transfer Note No',  value: tn },
+      { label: 'Total Boxes',       value: boxes },
+    ],
+    image, fgRows, pmRows,
+    onConfirm: async () => {
+      showLoader('Uploading image…');
+      try {
+        const fileName = `${state.location}_${tn}_${date}`;
+        const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_INBOUND_FOLDER);
+        showLoader('Saving to spreadsheet…');
+        const rows = buildInboundRows(date, state.user.email, tn, boxes, driveUrl, fgRows, pmRows);
+        await appendToSheet(`${state.location}_Inbound`, rows);
+        showSuccess(`Inbound entry saved for ${state.location}`);
+      } catch (e) { console.error(e); showToast('Error: ' + e.message, true); }
+      finally { hideLoader(); }
+    }
+  });
 }
 
 function buildInboundRows(date, email, tn, boxes, imageUrl, fgRows, pmRows) {
@@ -1122,35 +1208,41 @@ function buildInboundRows(date, email, tn, boxes, imageUrl, fgRows, pmRows) {
 // ═══════════════════════════════════════════════════════
 // SUBMIT OUTBOUND
 // ═══════════════════════════════════════════════════════
-async function submitOutbound() {
-  const date = getVal('ob-date');
+function submitOutbound() {
+  const date    = getVal('ob-date');
   const channel = getVal('ob-channel');
   const invoice = getVal('ob-invoice');
-  const boxes = getVal('ob-boxes');
-  const image = getFile('ob-image');
+  const boxes   = getVal('ob-boxes');
+  const image   = getFile('ob-image');
 
   if (!channel || !invoice || !boxes || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
 
-  showLoader('Uploading image…');
-  try {
-    const fileName = `${state.location}_${channel}_${invoice}`;
-    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_OUTBOUND_FOLDER);
+  const fgRows = collectRows('ob-fg', 'outbound-fg');
+  const pmRows = collectRows('ob-pm', 'outbound-pm');
 
-    const fgRows = collectRows('ob-fg', 'outbound-fg');
-    const pmRows = collectRows('ob-pm', 'outbound-pm');
-
-    showLoader('Saving to spreadsheet…');
-    const sheetName = `${state.location}_Outbound`;
-    const rows = buildOutboundRows(date, state.user.email, channel, invoice, boxes, driveUrl, fgRows, pmRows);
-    await appendToSheet(sheetName, rows);
-
-    showSuccess(`Outbound entry saved for ${state.location}`);
-  } catch (e) {
-    console.error(e);
-    showToast('Error: ' + e.message, true);
-  } finally {
-    hideLoader();
-  }
+  showReview({
+    type: 'Outbound', location: state.location,
+    fields: [
+      { label: 'Date',            value: date },
+      { label: 'Executive Email', value: state.user.email },
+      { label: 'Channel Name',    value: channel },
+      { label: 'Invoice No',      value: invoice },
+      { label: 'Total Boxes',     value: boxes },
+    ],
+    image, fgRows, pmRows,
+    onConfirm: async () => {
+      showLoader('Uploading image…');
+      try {
+        const fileName = `${state.location}_${channel}_${invoice}`;
+        const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_OUTBOUND_FOLDER);
+        showLoader('Saving to spreadsheet…');
+        const rows = buildOutboundRows(date, state.user.email, channel, invoice, boxes, driveUrl, fgRows, pmRows);
+        await appendToSheet(`${state.location}_Outbound`, rows);
+        showSuccess(`Outbound entry saved for ${state.location}`);
+      } catch (e) { console.error(e); showToast('Error: ' + e.message, true); }
+      finally { hideLoader(); }
+    }
+  });
 }
 
 function buildOutboundRows(date, email, channel, invoice, boxes, imageUrl, fgRows, pmRows) {
@@ -1170,34 +1262,39 @@ function buildOutboundRows(date, email, channel, invoice, boxes, imageUrl, fgRow
 // ═══════════════════════════════════════════════════════
 // SUBMIT RETURNS
 // ═══════════════════════════════════════════════════════
-async function submitReturns() {
-  const date = getVal('rt-date');
+function submitReturns() {
+  const date    = getVal('rt-date');
   const channel = getVal('rt-channel');
-  const credit = getVal('rt-credit');
-  const image = getFile('rt-image');
+  const credit  = getVal('rt-credit');
+  const image   = getFile('rt-image');
 
   if (!channel || !credit || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
   if (!validateAllUsable('rt-fg-','rqty-','uqty-')) { showToast('⚠ Usable qty cannot exceed Returned qty.', true); return; }
 
-  showLoader('Uploading image…');
-  try {
-    const fileName = `${state.location}_${channel}_${credit}`;
-    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_RETURNS_FOLDER);
+  const fgRows = collectRows('rt-fg', 'return-fg');
 
-    const fgRows = collectRows('rt-fg', 'return-fg');
-
-    showLoader('Saving to spreadsheet…');
-    const sheetName = `${state.location}_Returns`;
-    const rows = buildReturnsRows(date, state.user.email, channel, credit, driveUrl, fgRows);
-    await appendToSheet(sheetName, rows);
-
-    showSuccess(`Returns entry saved for ${state.location}`);
-  } catch (e) {
-    console.error(e);
-    showToast('Error: ' + e.message, true);
-  } finally {
-    hideLoader();
-  }
+  showReview({
+    type: 'Returns', location: state.location,
+    fields: [
+      { label: 'Date',            value: date },
+      { label: 'Executive Email', value: state.user.email },
+      { label: 'Channel Name',    value: channel },
+      { label: 'Credit Note No',  value: credit },
+    ],
+    image, fgRows, pmRows: [],
+    onConfirm: async () => {
+      showLoader('Uploading image…');
+      try {
+        const fileName = `${state.location}_${channel}_${credit}`;
+        const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_RETURNS_FOLDER);
+        showLoader('Saving to spreadsheet…');
+        const rows = buildReturnsRows(date, state.user.email, channel, credit, driveUrl, fgRows);
+        await appendToSheet(`${state.location}_Returns`, rows);
+        showSuccess(`Returns entry saved for ${state.location}`);
+      } catch (e) { console.error(e); showToast('Error: ' + e.message, true); }
+      finally { hideLoader(); }
+    }
+  });
 }
 
 function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
@@ -1355,6 +1452,76 @@ function validateAllUsable(prefix, refSuffix, usableSuffix) {
 function showSuccess(msg) {
   document.getElementById('success-msg').textContent = msg;
   showScreen('success');
+}
+
+// ═══════════════════════════════════════════════════════
+// REVIEW SCREEN
+// ═══════════════════════════════════════════════════════
+function showReview({ type, location, fields, image, fgRows, pmRows, onConfirm }) {
+  const imgTag = image
+    ? `<div class="review-image-wrap">
+         <img class="review-image-thumb" src="${image.dataUrl}" />
+         <span class="review-image-name">${image.name}</span>
+       </div>`
+    : '<span style="opacity:.4">No image</span>';
+
+  const fieldRows = fields.map(f =>
+    `<div class="review-row">
+       <span class="review-label">${f.label}</span>
+       <span class="review-value highlight">${f.value || '—'}</span>
+     </div>`
+  ).join('');
+
+  const renderProducts = (rows, typeLabel, cols) => {
+    if (!rows || !rows.length) return '';
+    const cards = rows.map((r, i) => {
+      const tags = cols.map(c =>
+        `<span class="review-product-tag">${c.label}: ${r[c.key] || '—'}</span>`
+      ).join('');
+      return `<div class="review-product-card">
+        <div class="review-product-name">${r.product || '—'}</div>
+        <div class="review-product-details">${tags}</div>
+      </div>`;
+    }).join('');
+    return `<div class="review-section">
+      <div class="review-section-title">📦 ${typeLabel}</div>
+      ${cards}
+    </div>`;
+  };
+
+  let fgCols = [], pmCols = [];
+  if (type === 'Inbound') {
+    fgCols = [{label:'Batch', key:'batch'},{label:'Recv Qty', key:'receivedQty'},{label:'Usable Qty', key:'usableQty'}];
+    pmCols = [{label:'Recv Qty', key:'receivedQty'},{label:'Usable Qty', key:'usableQty'}];
+  } else if (type === 'Outbound') {
+    fgCols = [{label:'Batch', key:'batch'},{label:'Sent Qty', key:'sentQty'}];
+    pmCols = [{label:'Sent Qty', key:'sentQty'}];
+  } else {
+    fgCols = [{label:'Batch', key:'batch'},{label:'Returned Qty', key:'returnedQty'},{label:'Usable Qty', key:'usableQty'}];
+  }
+
+  const fgSection = renderProducts(fgRows, 'Finished Goods', fgCols);
+  const pmSection = renderProducts(pmRows, 'Packing Material', pmCols);
+
+  document.getElementById('review-body').innerHTML = `
+    <div class="review-section">
+      <div class="review-section-title">📍 ${location} — ${type}</div>
+      ${fieldRows}
+      <div class="review-row">
+        <span class="review-label">Attached Image</span>
+        <span class="review-value">${imgTag}</span>
+      </div>
+    </div>
+    ${fgSection}
+    ${pmSection}
+  `;
+
+  // Wire up the confirm button
+  const btn = document.getElementById('review-confirm-btn');
+  btn.textContent = `Confirm & Submit ${type}`;
+  btn.onclick = onConfirm;
+
+  showScreen('review');
 }
 
 // ═══════════════════════════════════════════════════════
