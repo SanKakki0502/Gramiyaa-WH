@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Gramiyaa_WH v8 -->
+<!-- Gramiyaa_WH v10 — OAuth-only Sheets, no API key -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -534,7 +534,7 @@
 
 const CONFIG = {
   CLIENT_ID: '405286343472-594227o3ave8u0mhd2k3i69l4ldt151t.apps.googleusercontent.com',
-  API_KEY: 'process.env.API_WH',
+  // API_KEY removed — Sheets API uses the OAuth Bearer token instead (no key needed)
   SCOPES: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets openid email profile',
 
   // Google Sheets
@@ -736,15 +736,24 @@ async function fetchProductLists() {
     ]);
     state.fgProducts = (fg || []).flat().filter(Boolean);
     state.pmProducts = (pm || []).flat().filter(Boolean);
+    if (!state.fgProducts.length && !state.pmProducts.length) {
+      showToast('⚠ Products list empty — check Sheet tab names are "Products" and "Packing material"', true);
+    }
   } catch (e) {
     console.warn('Could not load product lists:', e);
+    showToast('⚠ Could not load product list from Google Sheets', true);
   }
 }
 
 async function fetchSheetValues(sheetId, tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}?key=${CONFIG.API_KEY}`;
+  // Uses OAuth Bearer token — no API key needed
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabName)}`;
   const r = await fetch(url, { headers: { Authorization: 'Bearer ' + state.accessToken } });
   const data = await r.json();
+  if (!r.ok) {
+    console.warn('Sheet fetch failed:', data?.error?.message, 'tab:', tabName);
+    return [];
+  }
   return data.values || [];
 }
 
