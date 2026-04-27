@@ -436,31 +436,88 @@
     .qty-error.visible { display: block; }
     .qty-invalid { border-color: #ff6b6b !important; background: rgba(255,107,107,0.08) !important; }
 
-    /* ── ACTION CARD 2-BUTTON ── */
-    .action-card{cursor:default !important;padding:16px 16px 12px !important}
-    .action-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .action-card-btns{display:flex;gap:8px}
-    .ac-btn{flex:1;border:none;border-radius:10px;padding:10px 8px;font-size:.82rem;font-weight:600;font-family:'Raleway',sans-serif;cursor:pointer;transition:opacity .15s,transform .1s}
-    .ac-btn:active{transform:scale(0.97);opacity:.85}
-    .ac-btn-primary{background:rgba(255,255,255,0.18);color:var(--white)}
-    .ac-btn-secondary{background:rgba(0,0,0,0.25);color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.15) !important}
-    /* ── ENTRIES ── */
-    .entry-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
-    .entry-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
-    .entry-card-date{font-family:'Raleway',sans-serif;font-weight:700;font-size:.85rem;color:var(--gold-light);white-space:nowrap}
-    .entry-card-ref{font-size:.72rem;background:rgba(201,168,76,0.15);color:var(--gold);padding:3px 10px;border-radius:20px;white-space:nowrap}
-    .entry-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-    .entry-meta-tag{font-size:.72rem;background:rgba(255,255,255,0.07);border-radius:6px;padding:3px 8px;color:rgba(255,255,255,0.6)}
-    .entry-edit-btn{width:100%;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);border-radius:8px;color:var(--gold-light);padding:9px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'Raleway',sans-serif;margin-top:10px}
-    .entry-edit-btn:active{background:rgba(201,168,76,0.28)}
-    .entry-prods-toggle{width:100%;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.45);padding:7px;font-size:.75rem;cursor:pointer;font-family:'Source Sans 3',sans-serif}
-    .entry-prods{display:none;margin-top:8px}
-    .entry-prods.open{display:block}
-    .entry-prod-row{padding:6px 0;border-top:1px solid rgba(255,255,255,0.06);font-size:.78rem}
-    .entry-prod-name{color:var(--white);font-weight:600;margin-bottom:4px}
-    .entry-prod-detail{color:rgba(255,255,255,0.5);margin-right:10px}
-    .entries-count{font-size:.78rem;color:rgba(255,255,255,0.35);margin-bottom:12px}
-    /* ── FILE TRIGGER ── */
+    /* ── REVIEW SCREEN ── */
+    .review-section {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .review-section-title {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 700; font-size: 0.82rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 12px;
+    }
+    .review-row:last-child { border-bottom: none; }
+    .review-label {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      flex-shrink: 0;
+    }
+    .review-value {
+      font-size: 0.88rem;
+      color: var(--white);
+      text-align: right;
+      word-break: break-word;
+    }
+    .review-value.highlight { color: var(--gold-light); font-weight: 600; }
+    .review-product-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .review-product-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .review-product-details {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .review-product-tag {
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 3px 8px;
+      color: rgba(255,255,255,0.65);
+    }
+    .review-image-thumb {
+      width: 64px; height: 64px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .review-image-wrap {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .review-image-name { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+
+    /* ── IMAGE PICKER BOTTOM SHEET ── */
+    #picker-sheet{display:none;position:fixed;inset:0;z-index:10000}
+    #picker-sheet.show{display:block}
+    .picker-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.55)}
+    .picker-panel{position:absolute;bottom:0;left:0;right:0;background:#1a3d2b;border-radius:22px 22px 0 0;padding:12px 20px 40px;animation:slideUp .22s ease}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .picker-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:4px;margin:0 auto 18px}
+    .picker-title{font-family:'Raleway',sans-serif;font-weight:700;font-size:.9rem;color:var(--gold-light);margin-bottom:16px;text-align:center}
+    .picker-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:var(--white);padding:16px 20px;font-size:1rem;font-family:'Source Sans 3',sans-serif;text-align:left;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:10px;transition:background .15s}
+    .picker-btn:active{background:rgba(201,168,76,.18)}
+    .picker-btn-icon{font-size:1.5rem}
+    .picker-cancel{width:100%;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:14px;color:rgba(255,255,255,.5);padding:14px;font-size:.95rem;cursor:pointer;margin-top:6px}
     .file-trigger{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s}
     .file-trigger:active{background:rgba(201,168,76,.1)}
     .file-trigger-icon{font-size:1.3rem}
@@ -468,22 +525,11 @@
     .file-trigger.chosen .file-trigger-label{color:#7dffb3}
     .file-trigger.chosen{border-color:rgba(125,255,179,.35)}
     .file-trigger-arrow{opacity:.35;font-size:.9rem}
-    /* ── PICKER ── */
-    #picker-sheet{display:none;position:fixed;inset:0;z-index:10000}
-    #picker-sheet.show{display:block}
-    .picker-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.55)}
-    .picker-panel{position:absolute;bottom:0;left:0;right:0;background:#1a3d2b;border-radius:22px 22px 0 0;padding:12px 20px 40px;animation:slideUp .22s ease}
-    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    .picker-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:4px;margin:0 auto 18px}
-    .picker-title{font-family:'Raleway',sans-serif;font-weight:700;font-size:.9rem;color:var(--gold-light);margin-bottom:16px;text-align:center}
-    .picker-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:var(--white);padding:16px 20px;font-size:1rem;font-family:'Source Sans 3',sans-serif;text-align:left;display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:10px;transition:background .15s}
-    .picker-btn:active{background:rgba(201,168,76,.18)}
-    .picker-btn-icon{font-size:1.5rem}
-    .picker-cancel{width:100%;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:14px;color:rgba(255,255,255,.5);padding:14px;font-size:.95rem;cursor:pointer;margin-top:6px}
+
     /* scrollbar */
-    ::-webkit-scrollbar{width:4px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.3);border-radius:4px}
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 4px; }
   </style>
 </head>
 <body>
@@ -557,35 +603,14 @@
     </div>
   </div>
 
-  <!-- SCREEN: ENTRIES -->
-  <div id="screen-entries" class="screen">
+  <!-- SCREEN: REVIEW -->
+  <div id="screen-review" class="screen">
     <div class="screen-body">
-      <button class="back-btn" onclick="showScreen('actions')">← Back</button>
-      <div class="breadcrumb" id="entries-breadcrumb"></div>
-      <div class="screen-title" id="entries-title">This Month's Entries</div>
-      <div id="channel-filter-wrap" style="display:none;margin-bottom:16px">
-        <div class="field" style="margin-bottom:0"><label>Filter by Channel</label>
-          <div style="display:flex;gap:8px">
-            <select id="channel-filter-select" style="flex:1;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.18);border-radius:10px;color:#fff;padding:11px 14px;font-size:.95rem;-webkit-appearance:none"><option value="">All Channels</option></select>
-            <button class="ac-btn ac-btn-primary" style="flex-shrink:0;padding:0 18px;border-radius:10px" onclick="applyChannelFilter()">Go</button>
-          </div>
-        </div>
-      </div>
-      <div id="entries-loading" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);display:none">Loading…</div>
-      <div id="entries-list"></div>
-      <div id="entries-empty" style="display:none;text-align:center;padding:48px 20px"><div style="font-size:3rem;margin-bottom:12px">📭</div><div style="color:rgba(255,255,255,0.45);font-size:.9rem">No entries found for this month</div></div>
-    </div>
-  </div>
-
-  <!-- EDIT MODAL -->
-  <div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:var(--green-dark);overflow-y:auto">
-    <div style="padding:20px">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-        <button class="back-btn" style="margin-bottom:0" onclick="closeEditModal()">← Cancel</button>
-        <div style="font-family:'Raleway',sans-serif;font-weight:700;color:var(--gold-light)" id="edit-modal-title">Edit Entry</div>
-      </div>
-      <div id="edit-form-container"></div>
-      <button class="submit-btn" id="edit-save-btn" style="margin-top:8px">Save Changes</button>
+      <button class="back-btn" onclick="showScreen('form')">← Edit</button>
+      <div class="screen-title">Review Entry</div>
+      <div class="screen-subtitle">Please confirm before submitting</div>
+      <div id="review-body"></div>
+      <button class="submit-btn" id="review-confirm-btn" style="margin-top:8px">Confirm & Submit</button>
       <div style="height:40px"></div>
     </div>
   </div>
@@ -1080,7 +1105,9 @@ const FILE_CACHE = {};
 function fieldFile(id, label, req = false) {
   return `<div class="field"><label>${label}${req?'<span class="req"> *</span>':''}</label>
     <div class="file-trigger" id="${id}-trigger" onclick="openPicker('${id}')">
-      <span class="file-trigger-icon">📎</span><span class="file-trigger-label" id="${id}-label">Tap to attach image</span><span class="file-trigger-arrow">›</span>
+      <span class="file-trigger-icon">📎</span>
+      <span class="file-trigger-label" id="${id}-label">Tap to attach image</span>
+      <span class="file-trigger-arrow">›</span>
     </div></div>`;
 }
 function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
@@ -1128,35 +1155,40 @@ function collectRows(prefix, type) {
 // ═══════════════════════════════════════════════════════
 // SUBMIT INBOUND
 // ═══════════════════════════════════════════════════════
-async function submitInbound() {
-  const date = getVal('ib-date');
-  const tn = getVal('ib-tn');
+function submitInbound() {
+  const date  = getVal('ib-date');
+  const tn    = getVal('ib-tn');
   const boxes = getVal('ib-boxes');
   const image = getFile('ib-image');
 
   if (!tn || !boxes || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
   if (!validateAllUsable('ib-fg-','rqty-','uqty-') || !validateAllUsable('ib-pm-','rqty-','uqty-')) { showToast('⚠ Usable qty cannot exceed Received qty.', true); return; }
 
-  showLoader('Uploading image…');
-  try {
-    const fileName = `${state.location}_${tn}_${date}`;
-    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_INBOUND_FOLDER);
+  const fgRows = collectRows('ib-fg', 'inbound-fg');
+  const pmRows = collectRows('ib-pm', 'inbound-pm');
 
-    const fgRows = collectRows('ib-fg', 'inbound-fg');
-    const pmRows = collectRows('ib-pm', 'inbound-pm');
-
-    showLoader('Saving to spreadsheet…');
-    const sheetName = `${state.location}_Inbound`;
-    const rows = buildInboundRows(date, state.user.email, tn, boxes, driveUrl, fgRows, pmRows);
-    await appendToSheet(sheetName, rows);
-
-    showSuccess(`Inbound entry saved for ${state.location}`);
-  } catch (e) {
-    console.error(e);
-    showToast('Error: ' + e.message, true);
-  } finally {
-    hideLoader();
-  }
+  showReview({
+    type: 'Inbound', location: state.location,
+    fields: [
+      { label: 'Date',              value: date },
+      { label: 'Executive Email',   value: state.user.email },
+      { label: 'Transfer Note No',  value: tn },
+      { label: 'Total Boxes',       value: boxes },
+    ],
+    image, fgRows, pmRows,
+    onConfirm: async () => {
+      showLoader('Uploading image…');
+      try {
+        const fileName = `${state.location}_${tn}_${date}`;
+        const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_INBOUND_FOLDER);
+        showLoader('Saving to spreadsheet…');
+        const rows = buildInboundRows(date, state.user.email, tn, boxes, driveUrl, fgRows, pmRows);
+        await appendToSheet(`${state.location}_Inbound`, rows);
+        showSuccess(`Inbound entry saved for ${state.location}`);
+      } catch (e) { console.error(e); showToast('Error: ' + e.message, true); }
+      finally { hideLoader(); }
+    }
+  });
 }
 
 function buildInboundRows(date, email, tn, boxes, imageUrl, fgRows, pmRows) {
@@ -1176,35 +1208,41 @@ function buildInboundRows(date, email, tn, boxes, imageUrl, fgRows, pmRows) {
 // ═══════════════════════════════════════════════════════
 // SUBMIT OUTBOUND
 // ═══════════════════════════════════════════════════════
-async function submitOutbound() {
-  const date = getVal('ob-date');
+function submitOutbound() {
+  const date    = getVal('ob-date');
   const channel = getVal('ob-channel');
   const invoice = getVal('ob-invoice');
-  const boxes = getVal('ob-boxes');
-  const image = getFile('ob-image');
+  const boxes   = getVal('ob-boxes');
+  const image   = getFile('ob-image');
 
   if (!channel || !invoice || !boxes || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
 
-  showLoader('Uploading image…');
-  try {
-    const fileName = `${state.location}_${channel}_${invoice}`;
-    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_OUTBOUND_FOLDER);
+  const fgRows = collectRows('ob-fg', 'outbound-fg');
+  const pmRows = collectRows('ob-pm', 'outbound-pm');
 
-    const fgRows = collectRows('ob-fg', 'outbound-fg');
-    const pmRows = collectRows('ob-pm', 'outbound-pm');
-
-    showLoader('Saving to spreadsheet…');
-    const sheetName = `${state.location}_Outbound`;
-    const rows = buildOutboundRows(date, state.user.email, channel, invoice, boxes, driveUrl, fgRows, pmRows);
-    await appendToSheet(sheetName, rows);
-
-    showSuccess(`Outbound entry saved for ${state.location}`);
-  } catch (e) {
-    console.error(e);
-    showToast('Error: ' + e.message, true);
-  } finally {
-    hideLoader();
-  }
+  showReview({
+    type: 'Outbound', location: state.location,
+    fields: [
+      { label: 'Date',            value: date },
+      { label: 'Executive Email', value: state.user.email },
+      { label: 'Channel Name',    value: channel },
+      { label: 'Invoice No',      value: invoice },
+      { label: 'Total Boxes',     value: boxes },
+    ],
+    image, fgRows, pmRows,
+    onConfirm: async () => {
+      showLoader('Uploading image…');
+      try {
+        const fileName = `${state.location}_${channel}_${invoice}`;
+        const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_OUTBOUND_FOLDER);
+        showLoader('Saving to spreadsheet…');
+        const rows = buildOutboundRows(date, state.user.email, channel, invoice, boxes, driveUrl, fgRows, pmRows);
+        await appendToSheet(`${state.location}_Outbound`, rows);
+        showSuccess(`Outbound entry saved for ${state.location}`);
+      } catch (e) { console.error(e); showToast('Error: ' + e.message, true); }
+      finally { hideLoader(); }
+    }
+  });
 }
 
 function buildOutboundRows(date, email, channel, invoice, boxes, imageUrl, fgRows, pmRows) {
@@ -1224,34 +1262,39 @@ function buildOutboundRows(date, email, channel, invoice, boxes, imageUrl, fgRow
 // ═══════════════════════════════════════════════════════
 // SUBMIT RETURNS
 // ═══════════════════════════════════════════════════════
-async function submitReturns() {
-  const date = getVal('rt-date');
+function submitReturns() {
+  const date    = getVal('rt-date');
   const channel = getVal('rt-channel');
-  const credit = getVal('rt-credit');
-  const image = getFile('rt-image');
+  const credit  = getVal('rt-credit');
+  const image   = getFile('rt-image');
 
   if (!channel || !credit || !image) { showToast('Please fill all required fields and upload an image.', true); return; }
   if (!validateAllUsable('rt-fg-','rqty-','uqty-')) { showToast('⚠ Usable qty cannot exceed Returned qty.', true); return; }
 
-  showLoader('Uploading image…');
-  try {
-    const fileName = `${state.location}_${channel}_${credit}`;
-    const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_RETURNS_FOLDER);
+  const fgRows = collectRows('rt-fg', 'return-fg');
 
-    const fgRows = collectRows('rt-fg', 'return-fg');
-
-    showLoader('Saving to spreadsheet…');
-    const sheetName = `${state.location}_Returns`;
-    const rows = buildReturnsRows(date, state.user.email, channel, credit, driveUrl, fgRows);
-    await appendToSheet(sheetName, rows);
-
-    showSuccess(`Returns entry saved for ${state.location}`);
-  } catch (e) {
-    console.error(e);
-    showToast('Error: ' + e.message, true);
-  } finally {
-    hideLoader();
-  }
+  showReview({
+    type: 'Returns', location: state.location,
+    fields: [
+      { label: 'Date',            value: date },
+      { label: 'Executive Email', value: state.user.email },
+      { label: 'Channel Name',    value: channel },
+      { label: 'Credit Note No',  value: credit },
+    ],
+    image, fgRows, pmRows: [],
+    onConfirm: async () => {
+      showLoader('Uploading image…');
+      try {
+        const fileName = `${state.location}_${channel}_${credit}`;
+        const driveUrl = await uploadToDrive(image, fileName, CONFIG.DRIVE_RETURNS_FOLDER);
+        showLoader('Saving to spreadsheet…');
+        const rows = buildReturnsRows(date, state.user.email, channel, credit, driveUrl, fgRows);
+        await appendToSheet(`${state.location}_Returns`, rows);
+        showSuccess(`Returns entry saved for ${state.location}`);
+      } catch (e) { console.error(e); showToast('Error: ' + e.message, true); }
+      finally { hideLoader(); }
+    }
+  });
 }
 
 function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
@@ -1412,265 +1455,73 @@ function showSuccess(msg) {
 }
 
 // ═══════════════════════════════════════════════════════
-// VIEW ENTRIES + EDIT
+// REVIEW SCREEN
 // ═══════════════════════════════════════════════════════
-let _entriesAction = null;
-let _allSheetRows  = [];
-let _editingGroup  = null;
+function showReview({ type, location, fields, image, fgRows, pmRows, onConfirm }) {
+  const imgTag = image
+    ? `<div class="review-image-wrap">
+         <img class="review-image-thumb" src="${image.dataUrl}" />
+         <span class="review-image-name">${image.name}</span>
+       </div>`
+    : '<span style="opacity:.4">No image</span>';
 
-async function viewEntries(action) {
-  _entriesAction = action;
-  const sheetName  = `${state.location}_${action}`;
-  const monthLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
-  document.getElementById('entries-breadcrumb').textContent   = `📍 ${state.location} › ${action}`;
-  document.getElementById('entries-title').textContent        = `${monthLabel} — ${action}`;
-  document.getElementById('channel-filter-wrap').style.display = action === 'Inbound' ? 'none' : 'block';
-  document.getElementById('entries-loading').style.display    = 'block';
-  document.getElementById('entries-list').innerHTML           = '';
-  document.getElementById('entries-empty').style.display      = 'none';
-  showScreen('entries');
-  try {
-    const rows = await fetchSheetValues(CONFIG.SHEET_ID, sheetName);
-    _allSheetRows = rows;
-    if (rows.length <= 1) { showEmptyEntries(); return; }
-    const now  = new Date();
-    const data = rows.slice(1).filter(r => {
-      const d = new Date(r[0]);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    });
-    if (!data.length) { showEmptyEntries(); return; }
-    if (action !== 'Inbound') {
-      const channels = [...new Set(data.map(r => r[2]).filter(Boolean))].sort();
-      const sel = document.getElementById('channel-filter-select');
-      sel.innerHTML = '<option value="">All Channels</option>' + channels.map(c=>`<option value="${c}">${c}</option>`).join('');
-    }
-    renderEntries(data);
-  } catch(e) {
-    console.error(e);
-    showToast('Could not load entries: ' + e.message, true);
-  } finally {
-    document.getElementById('entries-loading').style.display = 'none';
-  }
-}
+  const fieldRows = fields.map(f =>
+    `<div class="review-row">
+       <span class="review-label">${f.label}</span>
+       <span class="review-value highlight">${f.value || '—'}</span>
+     </div>`
+  ).join('');
 
-function applyChannelFilter() {
-  const ch  = document.getElementById('channel-filter-select').value;
-  const now = new Date();
-  let rows  = _allSheetRows.slice(1).filter(r => {
-    const d = new Date(r[0]);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
-  if (ch) rows = rows.filter(r => r[2] === ch);
-  if (!rows.length) { showEmptyEntries(); return; }
-  renderEntries(rows);
-}
-
-function showEmptyEntries() {
-  document.getElementById('entries-loading').style.display = 'none';
-  document.getElementById('entries-list').innerHTML = '';
-  document.getElementById('entries-empty').style.display = 'block';
-}
-
-function renderEntries(rows) {
-  const refKey = r => _entriesAction === 'Inbound' ? r[0]+'||'+r[2] : r[0]+'||'+r[3];
-  const groups = {}, order = [];
-  rows.forEach(r => { const k=refKey(r); if(!groups[k]){groups[k]=[];order.push(k);} groups[k].push(r); });
-
-  const html = `<div class="entries-count">${order.length} entr${order.length===1?'y':'ies'} this month</div>` +
-    order.slice().reverse().map((k, gi) => {
-      const g = groups[k], r0 = g[0];
-      let refBadge, metaTags;
-      if (_entriesAction === 'Inbound') {
-        refBadge = `TN: ${r0[2]}`; metaTags = `<span class="entry-meta-tag">📦 ${r0[3]||'?'} boxes</span><span class="entry-meta-tag">👤 ${r0[1]}</span>`;
-      } else if (_entriesAction === 'Outbound') {
-        refBadge = `Inv: ${r0[3]}`; metaTags = `<span class="entry-meta-tag">🏪 ${r0[2]}</span><span class="entry-meta-tag">📦 ${r0[4]||'?'} boxes</span><span class="entry-meta-tag">👤 ${r0[1]}</span>`;
-      } else {
-        refBadge = `CR: ${r0[3]}`; metaTags = `<span class="entry-meta-tag">🏪 ${r0[2]}</span><span class="entry-meta-tag">👤 ${r0[1]}</span>`;
-      }
-      const prodRows = g.filter(r => _entriesAction==='Inbound'?r[6]:_entriesAction==='Outbound'?r[7]:r[5]).map(r => {
-        if (_entriesAction==='Inbound')  return `<div class="entry-prod-row"><div class="entry-prod-name">${r[6]}</div><span class="entry-prod-detail">Type:${r[5]||'—'}</span><span class="entry-prod-detail">Batch:${r[7]||'—'}</span><span class="entry-prod-detail">Rcv:${r[8]||'—'}</span><span class="entry-prod-detail">Usable:${r[9]||'—'}</span></div>`;
-        if (_entriesAction==='Outbound') return `<div class="entry-prod-row"><div class="entry-prod-name">${r[7]}</div><span class="entry-prod-detail">Type:${r[6]||'—'}</span><span class="entry-prod-detail">Batch:${r[8]||'—'}</span><span class="entry-prod-detail">Sent:${r[9]||'—'}</span></div>`;
-        return `<div class="entry-prod-row"><div class="entry-prod-name">${r[5]}</div><span class="entry-prod-detail">Batch:${r[6]||'—'}</span><span class="entry-prod-detail">Ret:${r[7]||'—'}</span><span class="entry-prod-detail">Usable:${r[8]||'—'}</span></div>`;
-      }).join('');
-      const pid = `ep-${gi}`;
-      const prodsHtml = prodRows ? `<button class="entry-prods-toggle" onclick="const e=document.getElementById('${pid}');e.classList.toggle('open');this.textContent=e.classList.contains('open')?'▲ Hide Products':'▼ Show Products'">▼ Show Products</button><div class="entry-prods" id="${pid}">${prodRows}</div>` : '';
-      const gd = encodeURIComponent(JSON.stringify(g));
-      return `<div class="entry-card">
-        <div class="entry-card-header"><span class="entry-card-date">${r0[0]}</span><span class="entry-card-ref">${refBadge}</span></div>
-        <div class="entry-meta-row">${metaTags}</div>
-        ${prodsHtml}
-        <button class="entry-edit-btn" onclick="openEditModal(decodeURIComponent('${gd}'))">✏️ Edit Entry</button>
+  const renderProducts = (rows, typeLabel, cols) => {
+    if (!rows || !rows.length) return '';
+    const cards = rows.map((r, i) => {
+      const tags = cols.map(c =>
+        `<span class="review-product-tag">${c.label}: ${r[c.key] || '—'}</span>`
+      ).join('');
+      return `<div class="review-product-card">
+        <div class="review-product-name">${r.product || '—'}</div>
+        <div class="review-product-details">${tags}</div>
       </div>`;
     }).join('');
-  document.getElementById('entries-list').innerHTML = html;
-}
+    return `<div class="review-section">
+      <div class="review-section-title">📦 ${typeLabel}</div>
+      ${cards}
+    </div>`;
+  };
 
-// ── EDIT MODAL ──
-function fgDropdownVal(id, sel) {
-  return `<select id="${id}" required><option value="">Select Product</option>${(state.fgProducts||[]).map(p=>`<option value="${p}"${p===sel?' selected':''}>${p}</option>`).join('')}</select>`;
-}
-function pmDropdownVal(id, sel) {
-  return `<select id="${id}" required><option value="">Select Product</option>${(state.pmProducts||[]).map(p=>`<option value="${p}"${p===sel?' selected':''}>${p}</option>`).join('')}</select>`;
-}
-function buildERow(i, prefix, fields) {
-  const removeBtn = i>0 ? `<button class="remove-row-btn" onclick="removeRow('${prefix}-row-${i}')">×</button>` : '';
-  const inputs = fields.map(f => `<div class="field"><label>${f.label}${f.req?'<span class="req"> *</span>':''}</label>${f.type==='fg-select'?fgDropdownVal(f.id,f.val):f.type==='pm-select'?pmDropdownVal(f.id,f.val):`<input type="${f.inputType||'text'}" id="${f.id}" value="${f.val||''}" ${f.req?'required':''} min="${f.min||''}" />`}</div>`).join('');
-  return `<div class="product-row" id="${prefix}-row-${i}"><div class="product-row-num">#${i+1}</div>${removeBtn}${inputs}</div>`;
-}
-
-function openEditModal(gStr) {
-  const g = JSON.parse(gStr), r0 = g[0], action = _entriesAction;
-  document.getElementById('edit-modal-title').textContent = `Edit ${action} Entry`;
-  const imgField = `<div class="field"><label>Image (leave blank to keep current)</label><div class="file-trigger" id="ed-image-trigger" onclick="openPicker('ed-image')"><span class="file-trigger-icon">📎</span><span class="file-trigger-label" id="ed-image-label">Keep current image</span><span class="file-trigger-arrow">›</span></div></div>`;
-  let html = '';
-  if (action === 'Inbound') {
-    const fgRows = g.filter(r=>r[5]==='Finished Goods');
-    const pmRows = g.filter(r=>r[5]==='Packing Material');
-    const fgHtml = (fgRows.length?fgRows:[[]]). map((r,i)=>buildERow(i,'ed-fg',[{label:'Product',req:true,type:'fg-select',id:`ed-fg-prod-${i}`,val:r[6]||''},{label:'Batch No',req:true,id:`ed-fg-batch-${i}`,val:r[7]||''},{label:'Received Qty',req:true,inputType:'number',min:'0',id:`ed-fg-rqty-${i}`,val:r[8]||''},{label:'Usable Qty',req:true,inputType:'number',min:'0',id:`ed-fg-uqty-${i}`,val:r[9]||''}])).join('');
-    const pmHtml = (pmRows.length?pmRows:[[]]). map((r,i)=>buildERow(i,'ed-pm',[{label:'Product',req:true,type:'pm-select',id:`ed-pm-prod-${i}`,val:r[6]||''},{label:'Received Qty',req:true,inputType:'number',min:'0',id:`ed-pm-rqty-${i}`,val:r[8]||''},{label:'Usable Qty',req:true,inputType:'number',min:'0',id:`ed-pm-uqty-${i}`,val:r[9]||''}])).join('');
-    html = `<div class="form-section"><div class="form-section-title">📋 Basic Details</div>
-      <div class="field"><label>Date</label><input type="date" id="ed-date" value="${r0[0]}" /></div>
-      <div class="field"><label>Transfer Note No <span class="req">*</span></label><input type="text" id="ed-tn" value="${r0[2]||''}" required /></div>
-      <div class="field"><label>Total Boxes <span class="req">*</span></label><input type="number" id="ed-boxes" value="${r0[3]||''}" min="0" required /></div>
-      ${imgField}</div>
-      <div class="form-section"><div class="form-section-title">📦 Products</div>
-      <div class="tab-bar"><button class="tab-btn active" data-tab="ed-fg">Finished Goods</button><button class="tab-btn" data-tab="ed-pm">Packing Material</button></div>
-      <div class="tab-pane active" id="ed-fg-pane"><div id="ed-fg-rows">${fgHtml}</div><button class="add-row-btn" onclick="addEditRow('ed-fg','ib-fg')">+ Add</button></div>
-      <div class="tab-pane" id="ed-pm-pane"><div id="ed-pm-rows">${pmHtml}</div><button class="add-row-btn" onclick="addEditRow('ed-pm','ib-pm')">+ Add</button></div></div>`;
-  } else if (action === 'Outbound') {
-    const fgRows = g.filter(r=>r[6]==='Finished Goods');
-    const pmRows = g.filter(r=>r[6]==='Packing Material');
-    const fgHtml = (fgRows.length?fgRows:[[]]). map((r,i)=>buildERow(i,'ed-fg',[{label:'Product',req:true,type:'fg-select',id:`ed-fg-prod-${i}`,val:r[7]||''},{label:'Batch No',req:true,id:`ed-fg-batch-${i}`,val:r[8]||''},{label:'Sent Qty',req:true,inputType:'number',min:'0',id:`ed-fg-sqty-${i}`,val:r[9]||''}])).join('');
-    const pmHtml = (pmRows.length?pmRows:[[]]). map((r,i)=>buildERow(i,'ed-pm',[{label:'Product',req:true,type:'pm-select',id:`ed-pm-prod-${i}`,val:r[7]||''},{label:'Sent Qty',req:true,inputType:'number',min:'0',id:`ed-pm-sqty-${i}`,val:r[9]||''}])).join('');
-    html = `<div class="form-section"><div class="form-section-title">📋 Basic Details</div>
-      <div class="field"><label>Date</label><input type="date" id="ed-date" value="${r0[0]}" /></div>
-      <div class="field"><label>Channel Name <span class="req">*</span></label><input type="text" id="ed-channel" value="${r0[2]||''}" required /></div>
-      <div class="field"><label>Invoice No <span class="req">*</span></label><input type="text" id="ed-invoice" value="${r0[3]||''}" required /></div>
-      <div class="field"><label>Total Boxes <span class="req">*</span></label><input type="number" id="ed-boxes" value="${r0[4]||''}" min="0" required /></div>
-      ${imgField}</div>
-      <div class="form-section"><div class="form-section-title">📦 Products</div>
-      <div class="tab-bar"><button class="tab-btn active" data-tab="ed-fg">Finished Goods</button><button class="tab-btn" data-tab="ed-pm">Packing Material</button></div>
-      <div class="tab-pane active" id="ed-fg-pane"><div id="ed-fg-rows">${fgHtml}</div><button class="add-row-btn" onclick="addEditRow('ed-fg','ob-fg')">+ Add</button></div>
-      <div class="tab-pane" id="ed-pm-pane"><div id="ed-pm-rows">${pmHtml}</div><button class="add-row-btn" onclick="addEditRow('ed-pm','ob-pm')">+ Add</button></div></div>`;
+  let fgCols = [], pmCols = [];
+  if (type === 'Inbound') {
+    fgCols = [{label:'Batch', key:'batch'},{label:'Recv Qty', key:'receivedQty'},{label:'Usable Qty', key:'usableQty'}];
+    pmCols = [{label:'Recv Qty', key:'receivedQty'},{label:'Usable Qty', key:'usableQty'}];
+  } else if (type === 'Outbound') {
+    fgCols = [{label:'Batch', key:'batch'},{label:'Sent Qty', key:'sentQty'}];
+    pmCols = [{label:'Sent Qty', key:'sentQty'}];
   } else {
-    const rtRows = g.filter(r=>r[5]);
-    const rtHtml = (rtRows.length?rtRows:[[]]). map((r,i)=>buildERow(i,'ed-fg',[{label:'Product Code',req:true,type:'fg-select',id:`ed-fg-prod-${i}`,val:r[5]||''},{label:'Batch No',req:true,id:`ed-fg-batch-${i}`,val:r[6]||''},{label:'Returned Qty',req:true,inputType:'number',min:'0',id:`ed-fg-rqty-${i}`,val:r[7]||''},{label:'Usable Qty',req:true,inputType:'number',min:'0',id:`ed-fg-uqty-${i}`,val:r[8]||''}])).join('');
-    html = `<div class="form-section"><div class="form-section-title">📋 Basic Details</div>
-      <div class="field"><label>Date</label><input type="date" id="ed-date" value="${r0[0]}" /></div>
-      <div class="field"><label>Channel Name <span class="req">*</span></label><input type="text" id="ed-channel" value="${r0[2]||''}" required /></div>
-      <div class="field"><label>Credit Note No <span class="req">*</span></label><input type="text" id="ed-credit" value="${r0[3]||''}" required /></div>
-      ${imgField}</div>
-      <div class="form-section"><div class="form-section-title">📦 Returned Products</div>
-      <div id="ed-fg-rows">${rtHtml}</div><button class="add-row-btn" onclick="addEditRow('ed-fg','rt-fg')">+ Add</button></div>`;
+    fgCols = [{label:'Batch', key:'batch'},{label:'Returned Qty', key:'returnedQty'},{label:'Usable Qty', key:'usableQty'}];
   }
-  document.getElementById('edit-form-container').innerHTML = html;
-  initTabSwitching();
-  _editingGroup = { sheetName: `${state.location}_${action}`, originalRows: g };
-  document.getElementById('edit-save-btn').onclick = saveEdit;
-  document.getElementById('edit-modal').style.display = 'block';
-  document.getElementById('edit-modal').scrollTop = 0;
-}
 
-function closeEditModal() {
-  document.getElementById('edit-modal').style.display = 'none';
-  delete FILE_CACHE['ed-image'];
-}
+  const fgSection = renderProducts(fgRows, 'Finished Goods', fgCols);
+  const pmSection = renderProducts(pmRows, 'Packing Material', pmCols);
 
-const _editRC = {};
-function addEditRow(containerId, type) {
-  if (!_editRC[containerId]) _editRC[containerId] = document.getElementById(containerId+'-rows').querySelectorAll('.product-row').length;
-  const i = _editRC[containerId]++;
-  const fields = type==='ib-fg'?[{label:'Product',req:true,type:'fg-select',id:`ed-fg-prod-${i}`,val:''},{label:'Batch No',req:true,id:`ed-fg-batch-${i}`,val:''},{label:'Received Qty',req:true,inputType:'number',min:'0',id:`ed-fg-rqty-${i}`,val:''},{label:'Usable Qty',req:true,inputType:'number',min:'0',id:`ed-fg-uqty-${i}`,val:''}]
-    :type==='ib-pm'?[{label:'Product',req:true,type:'pm-select',id:`ed-pm-prod-${i}`,val:''},{label:'Received Qty',req:true,inputType:'number',min:'0',id:`ed-pm-rqty-${i}`,val:''},{label:'Usable Qty',req:true,inputType:'number',min:'0',id:`ed-pm-uqty-${i}`,val:''}]
-    :type==='ob-fg'?[{label:'Product',req:true,type:'fg-select',id:`ed-fg-prod-${i}`,val:''},{label:'Batch No',req:true,id:`ed-fg-batch-${i}`,val:''},{label:'Sent Qty',req:true,inputType:'number',min:'0',id:`ed-fg-sqty-${i}`,val:''}]
-    :type==='ob-pm'?[{label:'Product',req:true,type:'pm-select',id:`ed-pm-prod-${i}`,val:''},{label:'Sent Qty',req:true,inputType:'number',min:'0',id:`ed-pm-sqty-${i}`,val:''}]
-    :[{label:'Product Code',req:true,type:'fg-select',id:`ed-fg-prod-${i}`,val:''},{label:'Batch No',req:true,id:`ed-fg-batch-${i}`,val:''},{label:'Returned Qty',req:true,inputType:'number',min:'0',id:`ed-fg-rqty-${i}`,val:''},{label:'Usable Qty',req:true,inputType:'number',min:'0',id:`ed-fg-uqty-${i}`,val:''}];
-  const prefix = containerId==='ed-pm' ? 'ed-pm' : 'ed-fg';
-  const div = document.createElement('div');
-  div.innerHTML = buildERow(i, prefix, fields);
-  document.getElementById(containerId+'-rows').appendChild(div.firstElementChild);
-}
+  document.getElementById('review-body').innerHTML = `
+    <div class="review-section">
+      <div class="review-section-title">📍 ${location} — ${type}</div>
+      ${fieldRows}
+      <div class="review-row">
+        <span class="review-label">Attached Image</span>
+        <span class="review-value">${imgTag}</span>
+      </div>
+    </div>
+    ${fgSection}
+    ${pmSection}
+  `;
 
-function collectEditRows(containerId, type) {
-  const c = document.getElementById(containerId+'-rows');
-  if (!c) return [];
-  return Array.from(c.querySelectorAll('.product-row')).map(row => {
-    const sel = row.querySelector('select');
-    if (!sel?.value) return null;
-    const nums = Array.from(row.querySelectorAll('input[type=number]')).map(e=>e.value);
-    const txts = Array.from(row.querySelectorAll('input[type=text]')).map(e=>e.value);
-    if (type==='inbound-fg')  return {product:sel.value, batch:txts[0]||'', receivedQty:nums[0]||'', usableQty:nums[1]||''};
-    if (type==='inbound-pm')  return {product:sel.value, receivedQty:nums[0]||'', usableQty:nums[1]||''};
-    if (type==='outbound-fg') return {product:sel.value, batch:txts[0]||'', sentQty:nums[0]||''};
-    if (type==='outbound-pm') return {product:sel.value, sentQty:nums[0]||''};
-    if (type==='return-fg')   return {product:sel.value, batch:txts[0]||'', returnedQty:nums[0]||'', usableQty:nums[1]||''};
-    return null;
-  }).filter(Boolean);
-}
+  // Wire up the confirm button
+  const btn = document.getElementById('review-confirm-btn');
+  btn.textContent = `Confirm & Submit ${type}`;
+  btn.onclick = onConfirm;
 
-async function saveEdit() {
-  const { sheetName, originalRows } = _editingGroup;
-  const action = _entriesAction;
-  const date   = document.getElementById('ed-date')?.value || originalRows[0][0];
-  const newImg = getFile('ed-image');
-  showLoader('Saving changes…');
-  try {
-    const imgColIdx = action==='Inbound'?4 : action==='Outbound'?5 : 4;
-    let imageUrl = originalRows[0][imgColIdx] || '';
-    if (newImg) {
-      showLoader('Uploading new image…');
-      const folder = action==='Inbound'?CONFIG.DRIVE_INBOUND_FOLDER : action==='Outbound'?CONFIG.DRIVE_OUTBOUND_FOLDER : CONFIG.DRIVE_RETURNS_FOLDER;
-      imageUrl = await uploadToDrive(newImg, sheetName+'_edit_'+Date.now(), folder);
-    }
-    let newRows = [];
-    if (action === 'Inbound') {
-      const tn=document.getElementById('ed-tn').value.trim(), boxes=document.getElementById('ed-boxes').value.trim();
-      if (!tn||!boxes) { showToast('Fill all required fields',true); return; }
-      newRows = buildInboundRows(date, originalRows[0][1], tn, boxes, imageUrl, collectEditRows('ed-fg','inbound-fg'), collectEditRows('ed-pm','inbound-pm'));
-    } else if (action === 'Outbound') {
-      const ch=document.getElementById('ed-channel').value.trim(), inv=document.getElementById('ed-invoice').value.trim(), boxes=document.getElementById('ed-boxes').value.trim();
-      if (!ch||!inv||!boxes) { showToast('Fill all required fields',true); return; }
-      newRows = buildOutboundRows(date, originalRows[0][1], ch, inv, boxes, imageUrl, collectEditRows('ed-fg','outbound-fg'), collectEditRows('ed-pm','outbound-pm'));
-    } else {
-      const ch=document.getElementById('ed-channel').value.trim(), cr=document.getElementById('ed-credit').value.trim();
-      if (!ch||!cr) { showToast('Fill all required fields',true); return; }
-      newRows = buildReturnsRows(date, originalRows[0][1], ch, cr, imageUrl, collectEditRows('ed-fg','return-fg'));
-    }
-    showLoader('Updating spreadsheet…');
-    await deleteAndReplaceRows(sheetName, originalRows, newRows);
-    closeEditModal();
-    showToast('✅ Entry updated!', false);
-    await viewEntries(action);
-  } catch(e) {
-    console.error(e); showToast('Update failed: '+e.message, true);
-  } finally { hideLoader(); }
-}
-
-async function deleteAndReplaceRows(sheetName, originalRows, newRows) {
-  const metaR = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}?fields=sheets.properties`,
-    { headers: { Authorization: 'Bearer '+state.accessToken } });
-  const meta  = await metaR.json();
-  const sheet = meta.sheets.find(s => s.properties.title === sheetName);
-  if (!sheet) throw new Error('Sheet not found: '+sheetName);
-  const sheetId  = sheet.properties.sheetId;
-  const allRows  = await fetchSheetValues(CONFIG.SHEET_ID, sheetName);
-  const toDelete = [];
-  originalRows.forEach(orig => {
-    allRows.forEach((row, idx) => {
-      if (idx===0) return;
-      if (row[0]===orig[0] && row[1]===orig[1] && row[2]===orig[2] && row[3]===orig[3])
-        toDelete.push(idx);
-    });
-  });
-  const unique = [...new Set(toDelete)].sort((a,b)=>b-a);
-  if (unique.length) {
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}:batchUpdate`, {
-      method:'POST',
-      headers:{ Authorization:'Bearer '+state.accessToken, 'Content-Type':'application/json' },
-      body: JSON.stringify({ requests: unique.map(idx=>({ deleteDimension:{ range:{ sheetId, dimension:'ROWS', startIndex:idx, endIndex:idx+1 } } })) })
-    });
-  }
-  await appendToSheet(sheetName, newRows);
+  showScreen('review');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1678,23 +1529,24 @@ async function deleteAndReplaceRows(sheetName, originalRows, newRows) {
 // ═══════════════════════════════════════════════════════
 let _activeFileId = null;
 function openPicker(id) { _activeFileId = id; document.getElementById('picker-sheet').classList.add('show'); }
-function closePicker()  { document.getElementById('picker-sheet').classList.remove('show'); }
+function closePicker() { document.getElementById('picker-sheet').classList.remove('show'); }
 function pickerChoose(source) {
   closePicker();
-  const old = document.getElementById(source==='camera'?'__camera-input':'__gallery-input');
+  const inputId = source === 'camera' ? '__camera-input' : '__gallery-input';
+  const old = document.getElementById(inputId);
   const inp = old.cloneNode(true); old.parentNode.replaceChild(inp, old);
   inp.onchange = () => {
     const file = inp.files[0]; if (!file) return;
     const r = new FileReader();
     r.onload = e => {
-      FILE_CACHE[_activeFileId] = { dataUrl:e.target.result, name:file.name, type:file.type||'image/jpeg' };
-      const lbl = document.getElementById(_activeFileId+'-label');
-      const trg = document.getElementById(_activeFileId+'-trigger');
-      if (lbl) lbl.textContent = '✅ '+file.name;
+      FILE_CACHE[_activeFileId] = { dataUrl: e.target.result, name: file.name, type: file.type || 'image/jpeg' };
+      const lbl = document.getElementById(_activeFileId + '-label');
+      const trg = document.getElementById(_activeFileId + '-trigger');
+      if (lbl) lbl.textContent = '✅ ' + file.name;
       if (trg) trg.classList.add('chosen');
     };
-    r.onerror = () => showToast('Could not read file.',true);
-    r.readAsDataURL(file); inp.value='';
+    r.onerror = () => showToast('Could not read file. Try again.', true);
+    r.readAsDataURL(file); inp.value = '';
   };
   inp.click();
 }
