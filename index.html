@@ -1203,15 +1203,16 @@ function submitInbound() {
 }
 
 function buildInboundRows(date, email, tn, boxes, imageUrl, fgRows, pmRows) {
+  const ts = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true });
   const rows = [];
   if (!fgRows.length && !pmRows.length) {
-    rows.push([date, email, tn, boxes, imageUrl, '', '', '', '', '', '', '']);
+    rows.push([date, email, tn, boxes, imageUrl, '', '', '', '', '', ts]);
   }
   fgRows.forEach(r => {
-    rows.push([date, email, tn, boxes, imageUrl, 'Finished Goods', r.product, r.batch, r.receivedQty, r.usableQty, '', '']);
+    rows.push([date, email, tn, boxes, imageUrl, 'Finished Goods', r.product, r.batch, r.receivedQty, r.usableQty, ts]);
   });
   pmRows.forEach(r => {
-    rows.push([date, email, tn, boxes, imageUrl, 'Packing Material', r.product, '', r.receivedQty, r.usableQty, '', '']);
+    rows.push([date, email, tn, boxes, imageUrl, 'Packing Material', r.product, '', r.receivedQty, r.usableQty, ts]);
   });
   return rows;
 }
@@ -1252,15 +1253,16 @@ function submitOutbound() {
 }
 
 function buildOutboundRows(date, email, channel, invoice, boxes, imageUrl, fgRows, pmRows) {
+  const ts = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true });
   const rows = [];
   if (!fgRows.length && !pmRows.length) {
-    rows.push([date, email, channel, invoice, boxes, imageUrl, '', '', '', '', '']);
+    rows.push([date, email, channel, invoice, boxes, imageUrl, '', '', '', '', ts]);
   }
   fgRows.forEach(r => {
-    rows.push([date, email, channel, invoice, boxes, imageUrl, 'Finished Goods', r.product, r.batch, r.sentQty, '']);
+    rows.push([date, email, channel, invoice, boxes, imageUrl, 'Finished Goods', r.product, r.batch, r.sentQty, ts]);
   });
   pmRows.forEach(r => {
-    rows.push([date, email, channel, invoice, boxes, imageUrl, 'Packing Material', r.product, '', r.sentQty, '']);
+    rows.push([date, email, channel, invoice, boxes, imageUrl, 'Packing Material', r.product, '', r.sentQty, ts]);
   });
   return rows;
 }
@@ -1299,8 +1301,9 @@ function submitReturns() {
 }
 
 function buildReturnsRows(date, email, channel, credit, imageUrl, fgRows) {
-  if (!fgRows.length) return [[date, email, channel, credit, imageUrl, '', '', '', '']];
-  return fgRows.map(r => [date, email, channel, credit, imageUrl, r.product, r.batch, r.returnedQty, r.usableQty]);
+  const ts = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true });
+  if (!fgRows.length) return [[date, email, channel, credit, imageUrl, '', '', '', '', ts]];
+  return fgRows.map(r => [date, email, channel, credit, imageUrl, r.product, r.batch, r.returnedQty, r.usableQty, ts]);
 }
 
 // ════════════════════════════════════════════════════════
@@ -1400,10 +1403,10 @@ async function ensureSheet(sheetName) {
 
   // Add headers
   const headers = sheetName.endsWith('_Inbound')
-    ? [['Date', 'Executive Email', 'Transfer Note No', 'Total Boxes', 'Image URL', 'Product Type', 'Product', 'Batch No', 'Received Qty', 'Usable Qty', '', '']]
+    ? [['Date', 'Executive Email', 'Transfer Note No', 'Total Boxes', 'Image URL', 'Product Type', 'Product', 'Batch No', 'Received Qty', 'Usable Qty', 'Entry Timestamp']]
     : sheetName.endsWith('_Outbound')
-    ? [['Date', 'Executive Email', 'Channel Name', 'Invoice No', 'Total Boxes', 'Image URL', 'Product Type', 'Product', 'Batch No', 'Sent Qty', '']]
-    : [['Date', 'Executive Email', 'Channel Name', 'Credit Note No', 'Image URL', 'Product', 'Batch No', 'Returned Qty', 'Usable Qty']];
+    ? [['Date', 'Executive Email', 'Channel Name', 'Invoice No', 'Total Boxes', 'Image URL', 'Product Type', 'Product', 'Batch No', 'Sent Qty', 'Entry Timestamp']]
+    : [['Date', 'Executive Email', 'Channel Name', 'Credit Note No', 'Image URL', 'Product', 'Batch No', 'Returned Qty', 'Usable Qty', 'Entry Timestamp']];
 
   await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${encodeURIComponent(sheetName)}:append?valueInputOption=USER_ENTERED`, {
     method: 'POST',
@@ -1601,12 +1604,10 @@ function renderEntries(rows) {
       }).join('');
       const pid = `ep-${gi}`;
       const prodsHtml = prodRows ? `<button class="entry-prods-toggle" onclick="const e=document.getElementById('${pid}');e.classList.toggle('open');this.textContent=e.classList.contains('open')?'▲ Hide Products':'▼ Show Products'">▼ Show Products</button><div class="entry-prods" id="${pid}">${prodRows}</div>` : '';
-      const gd = encodeURIComponent(JSON.stringify(g));
       return `<div class="entry-card">
         <div class="entry-card-header"><span class="entry-card-date">${r0[0]}</span><span class="entry-card-ref">${refBadge}</span></div>
         <div class="entry-meta-row">${metaTags}</div>
         ${prodsHtml}
-        <button class="entry-edit-btn" onclick="openEditModal(decodeURIComponent('${gd}'))">✏️ Edit Entry</button>
       </div>`;
     }).join('');
   document.getElementById('entries-list').innerHTML = html;
@@ -1627,6 +1628,15 @@ function buildERow(i, prefix, fields) {
 
 function openEditModal(gStr) {
   const g = JSON.parse(gStr), r0 = g[0], action = _entriesAction;
+
+  // ── Permission check: only the original executive can edit their entry ──
+  const entryEmail = (r0[1] || '').toLowerCase().trim();
+  const currentEmail = (state.user?.email || '').toLowerCase().trim();
+  if (entryEmail && currentEmail && entryEmail !== currentEmail) {
+    showToast('⚠ You can only edit entries made by your account (' + state.user.email + ')', true);
+    return;
+  }
+
   document.getElementById('edit-modal-title').textContent = `Edit ${action} Entry`;
   const imgField = `<div class="field"><label>Image (leave blank to keep current)</label><div class="file-trigger" id="ed-image-trigger" onclick="openPicker('ed-image')"><span class="file-trigger-icon">📎</span><span class="file-trigger-label" id="ed-image-label">Keep current image</span><span class="file-trigger-arrow">›</span></div></div>`;
   let html = '';
@@ -1733,15 +1743,25 @@ async function saveEdit() {
     if (action === 'Inbound') {
       const tn=document.getElementById('ed-tn').value.trim(), boxes=document.getElementById('ed-boxes').value.trim();
       if (!tn||!boxes) { showToast('Fill all required fields',true); return; }
+      const origTs = originalRows[0][10] || '';
+      const editTs = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true });
       newRows = buildInboundRows(date, originalRows[0][1], tn, boxes, imageUrl, collectEditRows('ed-fg','inbound-fg'), collectEditRows('ed-pm','inbound-pm'));
+      // Append edit note to timestamp column
+      newRows = newRows.map(r => { r[10] = origTs + ' | Edited: ' + editTs; return r; });
     } else if (action === 'Outbound') {
       const ch=document.getElementById('ed-channel').value.trim(), inv=document.getElementById('ed-invoice').value.trim(), boxes=document.getElementById('ed-boxes').value.trim();
       if (!ch||!inv||!boxes) { showToast('Fill all required fields',true); return; }
+      const origTs = originalRows[0][10] || '';
+      const editTs = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true });
       newRows = buildOutboundRows(date, originalRows[0][1], ch, inv, boxes, imageUrl, collectEditRows('ed-fg','outbound-fg'), collectEditRows('ed-pm','outbound-pm'));
+      newRows = newRows.map(r => { r[10] = origTs + ' | Edited: ' + editTs; return r; });
     } else {
       const ch=document.getElementById('ed-channel').value.trim(), cr=document.getElementById('ed-credit').value.trim();
       if (!ch||!cr) { showToast('Fill all required fields',true); return; }
+      const origTs = originalRows[0][9] || '';
+      const editTs = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true });
       newRows = buildReturnsRows(date, originalRows[0][1], ch, cr, imageUrl, collectEditRows('ed-fg','return-fg'));
+      newRows = newRows.map(r => { r[9] = origTs + ' | Edited: ' + editTs; return r; });
     }
     showLoader('Updating spreadsheet…');
     await deleteAndReplaceRows(sheetName, originalRows, newRows);
