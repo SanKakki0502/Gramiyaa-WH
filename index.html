@@ -451,6 +451,7 @@
     .review-image-thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.15);flex-shrink:0}
     .review-image-wrap{display:flex;align-items:center;gap:10px}
     .review-image-name{font-size:.78rem;color:rgba(255,255,255,.45)}
+
     /* ── ACTION CARD 2-BUTTON ── */
     .action-card{cursor:default !important;padding:16px 16px 12px !important}
     .action-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
@@ -495,10 +496,6 @@
     .picker-btn:active{background:rgba(201,168,76,.18)}
     .picker-btn-icon{font-size:1.5rem}
     .picker-cancel{width:100%;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:14px;color:rgba(255,255,255,.5);padding:14px;font-size:.95rem;cursor:pointer;margin-top:6px}
-    /* qty validation */
-    .qty-error{color:#ff6b6b;font-size:.75rem;margin-top:5px;display:none}
-    .qty-error.visible{display:block}
-    .qty-invalid{border-color:#ff6b6b !important;background:rgba(255,107,107,.08) !important}
     /* scrollbar */
     ::-webkit-scrollbar{width:4px}
     ::-webkit-scrollbar-track{background:transparent}
@@ -548,21 +545,36 @@
       <div class="screen-title">Select Action</div>
       <div class="screen-subtitle">What would you like to record?</div>
       <div class="action-grid">
-        <button class="action-card inbound" onclick="openForm('Inbound')">
-          <div class="action-card-icon">📥</div>
-          <div class="action-card-title">INBOUND</div>
-          <div class="action-card-desc">Record incoming stock & transfers</div>
-        </button>
-        <button class="action-card outbound" onclick="openForm('Outbound')">
-          <div class="action-card-icon">📤</div>
-          <div class="action-card-title">OUTBOUND</div>
-          <div class="action-card-desc">Record dispatched orders</div>
-        </button>
-        <button class="action-card returns" onclick="openForm('Returns')">
-          <div class="action-card-icon">🔄</div>
-          <div class="action-card-title">RETURNS</div>
-          <div class="action-card-desc">Record returned goods</div>
-        </button>
+        <div class="action-card inbound">
+          <div class="action-card-top">
+            <div class="action-card-icon">📥</div>
+            <div><div class="action-card-title">INBOUND</div><div class="action-card-desc">Incoming stock &amp; transfers</div></div>
+          </div>
+          <div class="action-card-btns">
+            <button class="ac-btn ac-btn-primary" onclick="openForm('Inbound')">＋ New Entry</button>
+            <button class="ac-btn ac-btn-secondary" onclick="viewEntries('Inbound')">📋 View Entries</button>
+          </div>
+        </div>
+        <div class="action-card outbound">
+          <div class="action-card-top">
+            <div class="action-card-icon">📤</div>
+            <div><div class="action-card-title">OUTBOUND</div><div class="action-card-desc">Dispatched orders</div></div>
+          </div>
+          <div class="action-card-btns">
+            <button class="ac-btn ac-btn-primary" onclick="openForm('Outbound')">＋ New Entry</button>
+            <button class="ac-btn ac-btn-secondary" onclick="viewEntries('Outbound')">📋 View Entries</button>
+          </div>
+        </div>
+        <div class="action-card returns">
+          <div class="action-card-top">
+            <div class="action-card-icon">🔄</div>
+            <div><div class="action-card-title">RETURNS</div><div class="action-card-desc">Returned goods</div></div>
+          </div>
+          <div class="action-card-btns">
+            <button class="ac-btn ac-btn-primary" onclick="openForm('Returns')">＋ New Entry</button>
+            <button class="ac-btn ac-btn-secondary" onclick="viewEntries('Returns')">📋 View Entries</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
