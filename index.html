@@ -1519,8 +1519,19 @@ async function viewEntries(action) {
     _allSheetRows = rows;
     if (rows.length <= 1) { showEmptyEntries(); return; }
     const now  = new Date();
+    const parseRowDate = (str) => {
+      if (!str) return null;
+      // Try ISO format YYYY-MM-DD first
+      if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
+      // Try DD/MM/YYYY (Indian locale)
+      const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+      if (dmyMatch) return new Date(dmyMatch[3], dmyMatch[2]-1, dmyMatch[1]);
+      // Try MM/DD/YYYY
+      return new Date(str);
+    };
     const data = rows.slice(1).filter(r => {
-      const d = new Date(r[0]);
+      const d = parseRowDate(r[0]);
+      if (!d || isNaN(d.getTime())) return false;
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
     if (!data.length) { showEmptyEntries(); return; }
@@ -1529,7 +1540,10 @@ async function viewEntries(action) {
       const sel = document.getElementById('channel-filter-select');
       sel.innerHTML = '<option value="">All Channels</option>' + channels.map(c=>`<option value="${c}">${c}</option>`).join('');
     }
+    // Always show all entries immediately — for Outbound/Returns user can then filter by channel
     renderEntries(data);
+    // Auto-scroll entries list into view
+    document.getElementById('entries-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch(e) {
     console.error(e);
     showToast('Could not load entries: ' + e.message, true);
@@ -1541,8 +1555,16 @@ async function viewEntries(action) {
 function applyChannelFilter() {
   const ch  = document.getElementById('channel-filter-select').value;
   const now = new Date();
+  const parseRowDate = (str) => {
+    if (!str) return null;
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
+    const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (dmyMatch) return new Date(dmyMatch[3], dmyMatch[2]-1, dmyMatch[1]);
+    return new Date(str);
+  };
   let rows  = _allSheetRows.slice(1).filter(r => {
-    const d = new Date(r[0]);
+    const d = parseRowDate(r[0]);
+    if (!d || isNaN(d.getTime())) return false;
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
   if (ch) rows = rows.filter(r => r[2] === ch);
